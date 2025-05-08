@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useLanguage } from "@/hooks/use-language";
 import { useAuth } from "@/hooks/use-auth";
 import { translate } from "@/lib/i18n";
@@ -41,7 +41,7 @@ const NavItem = ({ href, icon, children }: NavItemProps) => {
   const isActive = location === href;
 
   return (
-    <NavLink
+    <Link
       href={href}
       className={cn(
         "flex items-center px-4 py-3 text-sm font-medium rounded-md group",
@@ -52,7 +52,7 @@ const NavItem = ({ href, icon, children }: NavItemProps) => {
     >
       <span className={cn("mr-3", isActive ? "text-primary" : "text-muted-foreground group-hover:text-primary")}>{icon}</span>
       {children}
-    </NavLink>
+    </Link>
   );
 };
 
