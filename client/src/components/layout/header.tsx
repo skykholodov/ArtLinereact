@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useLanguage } from "@/hooks/use-language";
 import { useAuth } from "@/hooks/use-auth";
+import { useTheme } from "@/hooks/use-theme";
 import { translate } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,7 +11,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, X, ChevronDown, Globe, LogIn, User } from "lucide-react";
+import { Menu, X, ChevronDown, Globe, LogIn, User, Moon, Sun, Laptop } from "lucide-react";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 // Create an SVG logo component
 const ArtLineLogo = () => (
@@ -81,24 +83,28 @@ export default function Header() {
         {/* Mobile Menu Button */}
         <div className="flex items-center space-x-2 lg:hidden">
           {!isMobileMenuOpen && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="p-1 h-8 w-8">
-                  <Globe className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-28">
-                <DropdownMenuItem onClick={() => setLanguage("ru")}>
-                  Русский
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setLanguage("kz")}>
-                  Қазақша
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setLanguage("en")}>
-                  English
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <>
+              <ThemeToggle />
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="p-1 h-8 w-8">
+                    <Globe className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-28">
+                  <DropdownMenuItem onClick={() => setLanguage("ru")}>
+                    Русский
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setLanguage("kz")}>
+                    Қазақша
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setLanguage("en")}>
+                    English
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
           )}
           
           <button

@@ -16,6 +16,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { AuthProvider } from "./hooks/use-auth";
 import { LanguageProvider } from "./hooks/use-language";
+import { ThemeProvider } from "./hooks/use-theme";
 import OnboardingWalkthrough from "@/components/OnboardingWalkthrough";
 
 function AppRoutes() {
@@ -42,13 +43,15 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
-        <AuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            {showOnboarding && <OnboardingWalkthrough />}
-            <AppRoutes />
-          </TooltipProvider>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <TooltipProvider>
+              <Toaster />
+              {showOnboarding && <OnboardingWalkthrough />}
+              <AppRoutes />
+            </TooltipProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </LanguageProvider>
     </QueryClientProvider>
   );
