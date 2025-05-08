@@ -15,7 +15,7 @@ if (process.env.SENDGRID_API_KEY) {
 
 // Адрес отправителя и получателя уведомлений
 const FROM_EMAIL = 'noreply@art-line.kz';
-const ADMIN_EMAIL = 'info@art-line.kz';
+const ADMIN_EMAIL = 'kholodovz@gmail.com';
 
 /**
  * Форматирует данные заявки для удобного просмотра в email
