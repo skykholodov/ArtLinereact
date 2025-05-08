@@ -68,7 +68,7 @@ export default function Header() {
 
   return (
     <header
-      className={`fixed w-full bg-white z-50 transition-all duration-300 ${
+      className={`fixed w-full bg-background z-50 transition-all duration-300 ${
         isScrolled ? "shadow-md py-2" : "py-4"
       }`}
     >
@@ -147,6 +147,9 @@ export default function Header() {
             {translate("nav.contacts", language)}
           </button>
 
+          {/* Theme Toggle */}
+          <ThemeToggle />
+
           {/* Language Selector */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -209,7 +212,7 @@ export default function Header() {
 
       {/* Mobile Navigation Menu */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden bg-white w-full border-t border-gray-100 shadow-md animate-fadeIn">
+        <div className="lg:hidden bg-background w-full border-t border-border shadow-md animate-fadeIn">
           <div className="container mx-auto px-4 py-3 sm:py-4">
             <nav className="flex flex-col space-y-3">
               <div className="flex flex-col space-y-0">
@@ -242,9 +245,21 @@ export default function Header() {
                 </div>
               </div>
 
+              {/* Theme Options */}
+              <div className="border-t border-border pt-3 mt-1">
+                <p className="text-sm text-muted-foreground mb-2">
+                  {language === "ru" ? "Тема:" : language === "kz" ? "Тақырып:" : "Theme:"}
+                </p>
+                <div className="flex items-center space-x-4 mb-3">
+                  <ThemeToggle />
+                </div>
+              </div>
+
               {/* Language Options */}
-              <div className="border-t border-gray-200 pt-3 mt-1">
-                <p className="text-sm text-gray-500 mb-2">Язык:</p>
+              <div className="border-t border-border pt-3 mt-1">
+                <p className="text-sm text-muted-foreground mb-2">
+                  {language === "ru" ? "Язык:" : language === "kz" ? "Тіл:" : "Language:"}
+                </p>
                 <div className="flex space-x-4">
                   <button
                     onClick={() => setLanguage("ru")}
