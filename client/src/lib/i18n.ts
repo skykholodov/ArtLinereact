@@ -6,11 +6,11 @@ export type TranslationKey = keyof typeof translations.ru;
 // Create the base path structure for nested translations
 export type NestedTranslationKeys<T> = {
   [K in keyof T]: T[K] extends object
-    ? `${string & K}.${string & keyof T[K]}`
+    ? `${string & K}.${string & keyof T[K]}` | `${string & K}.${string & keyof T[K]}.${string}`
     : K;
 }[keyof T];
 
-export type TranslationPath = NestedTranslationKeys<typeof translations.ru>;
+export type TranslationPath = NestedTranslationKeys<typeof translations.ru> | string;
 
 // Function to get nested translation value
 export function getNestedTranslation(
