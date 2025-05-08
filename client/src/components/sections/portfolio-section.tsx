@@ -99,40 +99,44 @@ export default function PortfolioSection() {
     : portfolioItems.filter(item => item.category === activeFilter);
 
   return (
-    <section id="portfolio" className="py-20 bg-background">
-      <div className="container mx-auto px-6">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl mb-4">{translate("portfolio.title", language)}</h2>
-          <p className="max-w-2xl mx-auto text-lg">
+    <section id="portfolio" className="py-12 sm:py-16 md:py-20 bg-background">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="text-center mb-10 md:mb-16">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl mb-3 md:mb-4 font-bold">{translate("portfolio.title", language)}</h2>
+          <p className="max-w-2xl mx-auto text-base sm:text-lg text-gray-700">
             {translate("portfolio.description", language)}
           </p>
         </div>
         
-        <div className="flex flex-wrap justify-center mb-8">
-          {Object.entries(JSON.parse(JSON.stringify(translate("portfolio.filters", language)))).map(([key, value]) => (
-            <Button
-              key={key}
-              onClick={() => setActiveFilter(key as PortfolioCategory)}
-              variant={activeFilter === key ? "default" : "outline"}
-              className={`m-2 ${activeFilter === key 
-                ? 'bg-primary text-white' 
-                : 'bg-white text-primary hover:bg-gray-100'}`}
-            >
-              {value as string}
-            </Button>
-          ))}
+        {/* Responsive filter buttons - scrollable on mobile */}
+        <div className="flex overflow-x-auto sm:flex-wrap justify-start sm:justify-center mb-6 sm:mb-8 pb-2 -mx-4 px-4 sm:px-0 sm:mx-0 hide-scrollbar">
+          <div className="flex sm:flex-wrap sm:justify-center min-w-min sm:min-w-0 space-x-2 sm:space-x-0">
+            {Object.entries(JSON.parse(JSON.stringify(translate("portfolio.filters", language)))).map(([key, value]) => (
+              <Button
+                key={key}
+                onClick={() => setActiveFilter(key as PortfolioCategory)}
+                variant={activeFilter === key ? "default" : "outline"}
+                className={`whitespace-nowrap sm:m-2 my-1 text-sm ${activeFilter === key 
+                  ? 'bg-primary text-white' 
+                  : 'bg-white text-primary hover:bg-gray-100'}`}
+                size="sm"
+              >
+                {value as string}
+              </Button>
+            ))}
+          </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
           {isLoading ? (
-            // Loading skeleton
+            // Loading skeleton - responsive for different screen sizes
             Array(6).fill(0).map((_, index) => (
               <div key={index} className="bg-white rounded-lg overflow-hidden shadow-md animate-pulse">
-                <div className="w-full h-64 bg-gray-300"></div>
-                <div className="p-6">
-                  <div className="h-6 bg-gray-300 rounded w-3/4 mb-3"></div>
-                  <div className="h-4 bg-gray-300 rounded w-full mb-2"></div>
-                  <div className="h-4 bg-gray-300 rounded w-5/6"></div>
+                <div className="w-full h-48 sm:h-56 md:h-64 bg-gray-300"></div>
+                <div className="p-4 sm:p-5 md:p-6">
+                  <div className="h-5 sm:h-6 bg-gray-300 rounded w-3/4 mb-2 sm:mb-3"></div>
+                  <div className="h-3 sm:h-4 bg-gray-300 rounded w-full mb-2"></div>
+                  <div className="h-3 sm:h-4 bg-gray-300 rounded w-5/6"></div>
                 </div>
               </div>
             ))
@@ -147,26 +151,28 @@ export default function PortfolioSection() {
                   <img 
                     src={item.image} 
                     alt={item.title} 
-                    className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
+                    className="w-full h-48 sm:h-56 md:h-64 object-cover transition-transform duration-500 group-hover:scale-110"
+                    loading="lazy" // Lazy loading for better performance
                   />
                   <div className="absolute inset-0 bg-primary bg-opacity-60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <Button
                       className="bg-white text-primary transform -translate-y-4 group-hover:translate-y-0 transition-transform"
+                      size="sm"
                     >
                       {translate("portfolio.viewProject", language)}
                     </Button>
                   </div>
                 </div>
-                <div className="p-6">
-                  <h3 className="font-montserrat font-semibold text-xl mb-2">{item.title}</h3>
-                  <p className="text-gray-600">{item.description}</p>
+                <div className="p-4 sm:p-5 md:p-6">
+                  <h3 className="font-montserrat font-semibold text-lg sm:text-xl mb-1 sm:mb-2 line-clamp-1">{item.title}</h3>
+                  <p className="text-gray-600 text-sm sm:text-base line-clamp-3">{item.description}</p>
                 </div>
               </div>
             ))
           )}
         </div>
         
-        <div className="text-center mt-12">
+        <div className="text-center mt-8 md:mt-12">
           <Button 
             className="inline-flex items-center justify-center bg-primary text-white"
             size="lg"
