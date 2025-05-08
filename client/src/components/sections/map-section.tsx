@@ -1,172 +1,108 @@
-import { useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useLanguage } from "@/hooks/use-language";
-import { translate } from "@/lib/i18n";
+import { useQuery } from "@tanstack/react-query";
+import { Loader2, MapPin } from "lucide-react";
 
-declare global {
-  interface Window {
-    google?: any;
-  }
+interface MapContent {
+  mapEmbedCode?: string;
+  address: string;
+  latitude?: string;
+  longitude?: string;
+  zoom?: string;
 }
 
 export default function MapSection() {
   const { language } = useLanguage();
-  const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstance = useRef<google.maps.Map | null>(null);
-  const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
+  const [address, setAddress] = useState("ул. Торетай 43, Алматы");
   
-  useEffect(() => {
-    // Skip map initialization if API key is not provided
-    if (!googleMapsApiKey) {
-      console.warn("Google Maps API key not provided. Map will not be displayed.");
-      return;
-    }
-    
-    // Initialize map only once when component mounts
-    if (!mapInstance.current && mapRef.current) {
-      // Load Google Maps API
-      const loadGoogleMapsApi = () => {
-        const existingScript = document.getElementById('google-maps-script');
-        if (!existingScript) {
-          const script = document.createElement('script');
-          script.id = 'google-maps-script';
-          script.src = `https://maps.googleapis.com/maps/api/js?key=${googleMapsApiKey}&callback=initMap`;
-          script.async = true;
-          script.defer = true;
-          document.head.appendChild(script);
-          
-          // Define global callback function
-          window.initMap = () => {
-            initializeMap();
-          };
-        } else if (window.google) {
-          // API already loaded
-          initializeMap();
-        }
-      };
-
-      // Initialize the map
-      const initializeMap = () => {
-        if (!mapRef.current || !window.google) return;
-        
-        // Coordinates for Art Line office in Almaty
-        const artLineLocation = { lat: 43.246223, lng: 76.944383 };
-        
-        mapInstance.current = new window.google.maps.Map(mapRef.current, {
-          center: artLineLocation,
-          zoom: 16,
-          styles: [
-            {
-              "featureType": "all",
-              "elementType": "geometry.fill",
-              "stylers": [{ "weight": "2.00" }]
-            },
-            {
-              "featureType": "all",
-              "elementType": "geometry.stroke",
-              "stylers": [{ "color": "#9c9c9c" }]
-            },
-            {
-              "featureType": "all",
-              "elementType": "labels.text",
-              "stylers": [{ "visibility": "on" }]
-            },
-            {
-              "featureType": "administrative",
-              "elementType": "all",
-              "stylers": [{ "visibility": "on" }]
-            },
-            {
-              "featureType": "landscape",
-              "elementType": "all",
-              "stylers": [{ "color": "#f2f2f2" }]
-            },
-            {
-              "featureType": "poi",
-              "elementType": "all",
-              "stylers": [{ "visibility": "off" }]
-            },
-            {
-              "featureType": "road",
-              "elementType": "all",
-              "stylers": [{ "saturation": -100 }, { "lightness": 45 }]
-            },
-            {
-              "featureType": "transit",
-              "elementType": "all",
-              "stylers": [{ "visibility": "simplified" }]
-            },
-            {
-              "featureType": "water",
-              "elementType": "all",
-              "stylers": [{ "color": "#3498db" }, { "visibility": "on" }]
-            }
-          ],
-          disableDefaultUI: true,
-          zoomControl: true,
-          mapTypeControl: false,
-          scaleControl: true,
-          streetViewControl: false,
-          rotateControl: false,
-          fullscreenControl: false
-        });
-        
-        // Add marker for Art Line office
-        const marker = new window.google.maps.Marker({
-          position: artLineLocation,
-          map: mapInstance.current,
-          title: "Art Line",
-          animation: window.google.maps.Animation.DROP,
-          icon: {
-            path: window.google.maps.SymbolPath.CIRCLE,
-            fillColor: '#E74C3C',
-            fillOpacity: 1,
-            strokeColor: '#FFFFFF',
-            strokeWeight: 2,
-            scale: 10
-          }
-        });
-        
-        // Add info window
-        const infoWindow = new window.google.maps.InfoWindow({
-          content: `<div style="font-family: 'Montserrat', sans-serif; padding: 8px;">
-            <strong>Art Line</strong><br>
-            ${language === "ru" ? "ул. Торетай 43, Алматы" : 
-              language === "kz" ? "Торетай к-сі 43, Алматы" : 
-              "43 Toretai St, Almaty"}
-          </div>`
-        });
-        
-        marker.addListener("click", () => {
-          infoWindow.open(mapInstance.current, marker);
-        });
-      };
-      
-      loadGoogleMapsApi();
-    }
-    
-    // Cleanup function
-    return () => {
-      const script = document.getElementById('google-maps-script');
-      if (script) {
-        script.remove();
+  // Получение контента карты из API
+  const { data: mapContent, isLoading } = useQuery({
+    queryKey: ["/api/content", { sectionType: "map", sectionKey: "main", language }],
+    queryFn: async ({ queryKey }) => {
+      const [_path, params] = queryKey as [string, { sectionType: string; sectionKey: string; language: string }];
+      const res = await fetch(`/api/content?sectionType=${params.sectionType}&sectionKey=${params.sectionKey}&language=${params.language}`);
+      if (!res.ok) {
+        if (res.status === 404) return null;
+        throw new Error(`Failed to fetch map content: ${res.statusText}`);
       }
-      delete window.initMap;
-    };
-  }, []);
+      return await res.json();
+    }
+  });
 
-  // Update info window content when language changes
+  // Установка адреса в зависимости от языка и загруженных данных
   useEffect(() => {
-    if (mapInstance.current && window.google) {
-      // Re-initialize map when language changes to update info window content
-      mapInstance.current = null;
-      if (mapRef.current) {
-        const initializeMap = window.initMap;
-        if (typeof initializeMap === 'function') {
-          initializeMap();
-        }
+    if (mapContent?.content?.address) {
+      setAddress(mapContent.content.address);
+    } else {
+      // Fallback адреса на разных языках
+      if (language === "ru") {
+        setAddress("ул. Торетай 43, Алматы");
+      } else if (language === "kz") {
+        setAddress("Торетай к-сі 43, Алматы");
+      } else {
+        setAddress("43 Toretai St, Almaty");
       }
     }
-  }, [language]);
+  }, [mapContent, language]);
+  
+  // Формирование URL для Google Maps на основе адреса
+  const getMapsUrl = () => {
+    return `https://maps.google.com/?q=${encodeURIComponent(address)}`;
+  };
+  
+  // Функция для безопасной вставки HTML
+  const createMarkup = (html: string) => {
+    return { __html: html };
+  };
+  
+  // Рендеринг контента карты
+  const renderMapContent = () => {
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center h-full bg-gray-100">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      );
+    }
+    
+    // Если есть HTML-код для встраивания, используем его
+    if (mapContent?.content?.mapEmbedCode) {
+      return (
+        <div 
+          dangerouslySetInnerHTML={createMarkup(mapContent.content.mapEmbedCode)} 
+          className="w-full h-full"
+        />
+      );
+    }
+    
+    // Если есть координаты, формируем iframe с Google Maps
+    if (mapContent?.content?.latitude && mapContent?.content?.longitude) {
+      const { latitude, longitude, zoom = "15" } = mapContent.content;
+      return (
+        <iframe
+          src={`https://maps.google.com/maps?q=${latitude},${longitude}&z=${zoom}&output=embed`}
+          width="100%"
+          height="100%"
+          frameBorder="0"
+          style={{ border: 0 }}
+          allowFullScreen
+          aria-hidden="false"
+          tabIndex={0}
+          title="Art Line на карте"
+        ></iframe>
+      );
+    }
+    
+    // Fallback: статичная карта
+    return (
+      <div className="flex items-center justify-center h-full bg-gray-100">
+        <div className="text-center">
+          <MapPin className="h-12 w-12 text-secondary mx-auto mb-3" />
+          <p className="text-gray-600">{address}</p>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <section className="h-96 relative">
@@ -174,16 +110,20 @@ export default function MapSection() {
         <div className="container mx-auto px-6">
           <div className="bg-white w-72 p-6 rounded-lg shadow-lg pointer-events-auto">
             <h3 className="font-montserrat font-semibold text-xl mb-4">
-              {translate("contact.map.title", language)}
+              {language === "ru" ? "Наше местоположение" :
+                language === "kz" ? "Біздің орналасқан жеріміз" :
+                "Our Location"}
             </h3>
-            <p className="mb-4">ул. Торетай 43, Алматы</p>
+            <p className="mb-4">{address}</p>
             <a 
-              href="https://maps.google.com/?q=Алматы,+улица+Торетай+43" 
+              href={getMapsUrl()} 
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center font-medium text-accent hover:underline"
             >
-              {translate("contact.map.route", language)} <i className="fas fa-arrow-right ml-1"></i>
+              {language === "ru" ? "Проложить маршрут" :
+                language === "kz" ? "Маршрут құру" :
+                "Get directions"} <MapPin className="h-4 w-4 ml-1" />
             </a>
           </div>
         </div>
@@ -191,10 +131,11 @@ export default function MapSection() {
       
       <div 
         id="map" 
-        ref={mapRef}
         className="w-full h-full bg-gray-200"
         aria-label="Location map of Art Line office"
-      ></div>
+      >
+        {renderMapContent()}
+      </div>
     </section>
   );
 }
