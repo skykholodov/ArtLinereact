@@ -16,7 +16,7 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 // Create an SVG logo component
 const ArtLineLogo = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" className="h-10 w-auto">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" className="h-10 w-auto svg-logo">
     <path fill="#D3AB40" d="M18 36L0 18L18 0L36 18L18 36ZM18 6L18 30L28.9 18L18 6Z"/>
     <path fill="#2C3E50" d="M18 12L18 24L24 18L18 12Z"/>
   </svg>

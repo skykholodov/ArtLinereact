@@ -26,25 +26,25 @@
 }
 
 .dark {
-  --background: 222 14% 10%;
-  --foreground: 0 0% 98%;
-  --muted: 217 5% 15%;
-  --muted-foreground: 215 5% 65%;
-  --popover: 222 14% 10%;
-  --popover-foreground: 0 0% 98%;
-  --card: 222 14% 10%;
-  --card-foreground: 0 0% 98%;
-  --border: 217 5% 15%;
-  --input: 217 5% 15%;
-  --primary: 210 40% 25%;
-  --primary-foreground: 0 0% 98%;
-  --secondary: 5 78% 57%;
-  --secondary-foreground: 0 0% 98%;
+  --background: 222 47% 11%;
+  --foreground: 210 40% 98%;
+  --muted: 217 33% 17%;
+  --muted-foreground: 215 20% 75%;
+  --popover: 222 45% 7%;
+  --popover-foreground: 210 40% 98%;
+  --card: 222 47% 11%;
+  --card-foreground: 210 40% 98%;
+  --border: 217 33% 17%;
+  --input: 217 33% 17%;
+  --primary: 210 40% 30%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 5 90% 57%;
+  --secondary-foreground: 0 0% 100%;
   --accent: 206 81% 53%;
-  --accent-foreground: 0 0% 98%;
-  --destructive: 0 62% 30%;
-  --destructive-foreground: 0 0% 98%;
-  --ring: 215 5% 25%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --ring: 215 20% 65%;
   --radius: 0.5rem;
 }
 
@@ -114,6 +114,43 @@
   background-image: url('https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080&q=80');
   background-size: cover;
   background-position: center;
+}
+
+/* Стили для темного режима */
+.dark .svg-logo path:first-child {
+  fill: #E6A830;
+}
+
+.dark .svg-logo path:last-child {
+  fill: #A3C5E6;
+}
+
+/* Стили для логотипа в футере в темном режиме */
+.dark .footer-logo path:first-child {
+  fill: #A3C5E6;
+}
+
+/* Улучшенные стили для темного режима */
+.dark .card {
+  @apply bg-card border-border shadow-lg;
+}
+
+.dark .dropdown-content {
+  @apply bg-popover border-border;
+}
+
+.dark input, 
+.dark textarea, 
+.dark select {
+  @apply bg-input border-border text-foreground;
+}
+
+.dark button.btn-outline {
+  @apply border-border text-foreground hover:bg-muted;
+}
+
+.dark .section-divider {
+  @apply border-border;
 }
 
 .portfolio-item {
