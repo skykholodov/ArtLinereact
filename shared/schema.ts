@@ -15,6 +15,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
   name: true,
+  isAdmin: true,
 });
 
 // Content model for all page sections
