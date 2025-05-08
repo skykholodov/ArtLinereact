@@ -51,6 +51,9 @@ export interface IStorage {
   countContentRevisions(): Promise<number>;
   countContactSubmissions(): Promise<number>;
   
+  // Demo content operations
+  initDemoContent(userId: number): Promise<void>;
+  
   // Session store
   sessionStore: session.Store;
 }
@@ -99,6 +102,8 @@ export class MemStorage implements IStorage {
       isAdmin: true
     }).then(user => {
       console.log("Default admin user created with ID:", user.id);
+      // Инициализируем демонстрационный контент
+      this.initDemoContent(user.id);
     }).catch(err => {
       console.error("Error creating default admin user:", err);
     });
@@ -318,6 +323,140 @@ export class MemStorage implements IStorage {
   async countContactSubmissions(): Promise<number> {
     return this.contactForms.size;
   }
+
+  // Инициализация демонстрационного контента
+  async initDemoContent(userId: number): Promise<void> {
+    try {
+      console.log("Initializing demo content...");
+
+      // Создаем отзывы для русского языка
+      await this.createContent({
+        sectionType: "testimonials",
+        sectionKey: "items",
+        language: "ru",
+        content: {
+          items: [
+            {
+              id: 1,
+              text: "Работаем с Art-Line уже третий год — от визиток до брендирования автомобилей. Всегда чётко, быстро и со вкусом. Особенно радует подход к деталям: всё продумано, ничего лишнего. Рекомендуем всем, кто ценит профессионализм!",
+              author: "Арт Директор",
+              position: "корпоративный клиент",
+              rating: 5
+            },
+            {
+              id: 2,
+              text: "Заказывал разработку дизайна для вывески. Ребята очень креативные, предложили несколько интересных идей. Вывеска получилась просто отличная!",
+              author: "Бакытжан",
+              position: "Разработка дизайна вывески",
+              rating: 5
+            },
+            {
+              id: 3,
+              text: "Очень доволен работой агентства. Быстро и профессионально сделали брендирование автомобиля. Рекомендую!",
+              author: "Сергей",
+              position: "Брендирование автомобиля",
+              rating: 5
+            },
+            {
+              id: 4,
+              text: "Агентство помогло с оформлением мероприятия. Все было сделано оперативно и качественно. Очень благодарна за их профессионализм!",
+              author: "Елена",
+              position: "Оформление мероприятия",
+              rating: 5
+            }
+          ]
+        },
+        createdBy: userId,
+        updatedBy: userId
+      });
+
+      // Создаем отзывы для казахского языка
+      await this.createContent({
+        sectionType: "testimonials",
+        sectionKey: "items",
+        language: "kz",
+        content: {
+          items: [
+            {
+              id: 1,
+              text: "Art-Line-мен үшінші жыл жұмыс істеп келеміз — визиткалардан бастап автомобильдерді брендтеуге дейін. Әрқашан анық, жылдам және талғаммен. Әсіресе егжей-тегжейлі тәсіл қуантады: барлығы ойластырылған, артық ештеңе жоқ. Кәсібилікті бағалайтын барлық адамдарға ұсынамыз!",
+              author: "Арт Директор",
+              position: "корпоративтік клиент",
+              rating: 5
+            },
+            {
+              id: 2,
+              text: "Маңдайша үшін дизайн әзірлеуге тапсырыс бердім. Жігіттер өте креативті, бірнеше қызықты идеялар ұсынды. Маңдайша керемет шықты!",
+              author: "Бакытжан",
+              position: "Маңдайша дизайнын әзірлеу",
+              rating: 5
+            },
+            {
+              id: 3,
+              text: "Агенттіктің жұмысына өте ризамын. Автокөлікті брендтеуді жылдам және кәсіби түрде жасады. Ұсынамын!",
+              author: "Сергей",
+              position: "Автомобильді брендтеу",
+              rating: 5
+            },
+            {
+              id: 4,
+              text: "Агенттік іс-шараны безендіруге көмектесті. Барлығы жедел және сапалы жасалды. Олардың кәсібилігі үшін өте ризамын!",
+              author: "Елена",
+              position: "Іс-шараны безендіру",
+              rating: 5
+            }
+          ]
+        },
+        createdBy: userId,
+        updatedBy: userId
+      });
+
+      // Создаем отзывы для английского языка
+      await this.createContent({
+        sectionType: "testimonials",
+        sectionKey: "items",
+        language: "en",
+        content: {
+          items: [
+            {
+              id: 1,
+              text: "We've been working with Art-Line for the third year now - from business cards to vehicle branding. Always precise, fast, and tasteful. The approach to details is especially pleasing: everything is thought out, nothing excessive. We recommend to everyone who values professionalism!",
+              author: "Art Director",
+              position: "corporate client",
+              rating: 5
+            },
+            {
+              id: 2,
+              text: "I ordered a design development for a signage. The team is very creative, they offered several interesting ideas. The sign turned out great!",
+              author: "Bakytzhan",
+              position: "Signage design development",
+              rating: 5
+            },
+            {
+              id: 3,
+              text: "Very satisfied with the agency's work. They branded the car quickly and professionally. I recommend!",
+              author: "Sergey",
+              position: "Vehicle branding",
+              rating: 5
+            },
+            {
+              id: 4,
+              text: "The agency helped with the event decoration. Everything was done promptly and with quality. Very grateful for their professionalism!",
+              author: "Elena",
+              position: "Event decoration",
+              rating: 5
+            }
+          ]
+        },
+        createdBy: userId,
+        updatedBy: userId
+      });
+
+      console.log("Demo content initialized successfully");
+    } catch (error) {
+      console.error("Error initializing demo content:", error);
+    }
+  }
 }
 
 import { DatabaseStorage } from "./database-storage";
@@ -325,7 +464,7 @@ import { DatabaseStorage } from "./database-storage";
 // Определяем окружение
 const isDevelopment = process.env.NODE_ENV === 'development';
 
-// Выбираем между in-memory и database storage в зависимости от окружения
+// Временно используем MemStorage для отладки
 export const storage = isDevelopment 
   ? new MemStorage() 
   : new DatabaseStorage();
