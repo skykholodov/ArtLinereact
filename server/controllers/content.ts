@@ -10,7 +10,8 @@ const contentRequestSchema = z.object({
   language: z.string().refine(val => ['ru', 'kz', 'en'].includes(val), {
     message: "Language must be one of: ru, kz, en",
   }),
-  content: z.any()
+  content: z.any(),
+  autoTranslate: z.boolean().optional()
 });
 
 // Get content for a specific section, key, and language
