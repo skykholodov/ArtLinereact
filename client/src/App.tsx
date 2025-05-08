@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
@@ -16,6 +16,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { AuthProvider } from "./hooks/use-auth";
 import { LanguageProvider } from "./hooks/use-language";
+import OnboardingWalkthrough from "@/components/OnboardingWalkthrough";
 
 function AppRoutes() {
   return (
@@ -35,12 +36,16 @@ function AppRoutes() {
 }
 
 function App() {
+  const [location] = useLocation();
+  const showOnboarding = location === "/";
+
   return (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
         <AuthProvider>
           <TooltipProvider>
             <Toaster />
+            {showOnboarding && <OnboardingWalkthrough />}
             <AppRoutes />
           </TooltipProvider>
         </AuthProvider>

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLanguage } from "@/hooks/use-language";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
@@ -11,6 +11,7 @@ import ContactSection from "@/components/sections/contact-section";
 import MapSection from "@/components/sections/map-section";
 import { ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import ResetOnboardingButton from "@/components/ui/reset-onboarding-button";
 
 export default function HomePage() {
   const { language } = useLanguage();
@@ -40,6 +41,14 @@ export default function HomePage() {
       behavior: "smooth",
     });
   };
+
+  // Проверка, видел ли пользователь онбординг
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean>(false);
+  
+  useEffect(() => {
+    const seenOnboarding = localStorage.getItem('hasSeenOnboarding');
+    setHasSeenOnboarding(seenOnboarding === 'true');
+  }, []);
 
   return (
     <>
@@ -72,6 +81,9 @@ export default function HomePage() {
       >
         <ArrowUp className="h-5 w-5" />
       </Button>
+      
+      {/* Кнопка сброса онбординга - показывается только если пользователь уже прошел онбординг */}
+      {hasSeenOnboarding && <ResetOnboardingButton />}
     </>
   );
 }
