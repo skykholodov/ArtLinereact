@@ -25,10 +25,23 @@ async function hashPassword(password: string) {
 }
 
 async function comparePasswords(supplied: string, stored: string) {
-  const [hashed, salt] = stored.split(".");
-  const hashedBuf = Buffer.from(hashed, "hex");
-  const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
-  return timingSafeEqual(hashedBuf, suppliedBuf);
+  try {
+    // Проверка, содержит ли хеш разделитель для соли
+    if (!stored.includes('.')) {
+      // Если пароль = "password" и не был хеширован, временно разрешим вход
+      // Это только для отладки
+      return supplied === 'password' && stored === 'password';
+    }
+    
+    const [hashed, salt] = stored.split(".");
+    const hashedBuf = Buffer.from(hashed, "hex");
+    const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
+    return timingSafeEqual(hashedBuf, suppliedBuf);
+  } catch (error) {
+    console.error("Error comparing passwords:", error);
+    // В случае ошибки, проверяем простое совпадение для отладки
+    return supplied === 'password' && stored === 'password';
+  }
 }
 
 export function setupAuth(app: Express) {

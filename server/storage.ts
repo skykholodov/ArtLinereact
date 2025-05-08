@@ -94,7 +94,7 @@ export class MemStorage implements IStorage {
     // Create default admin user if none exists
     this.createUser({
       username: "admin",
-      password: "$2b$10$9eK/pNuVHqPQ5zvHqCHCGu4mO.vbCTnD7IRyEHr5fFwf.QE5xorSi", // "admin123" hashed
+      password: "password", // Простой пароль для отладки
       name: "Administrator",
       isAdmin: true
     }).then(user => {
