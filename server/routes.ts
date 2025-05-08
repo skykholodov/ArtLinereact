@@ -9,6 +9,7 @@ import {
   restoreContentRevision 
 } from "./controllers/content";
 import { uploadFiles, getMedia, deleteMedia } from "./controllers/upload";
+import { sendAdminNotification, sendUserConfirmation } from "./services/email";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -132,6 +133,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         service: service || "",
         message: message || ""
       });
+      
+      // Отправка уведомления администратору
+      sendAdminNotification(submission)
+        .then(sent => {
+          console.log(`Admin notification ${sent ? 'sent' : 'failed'} for submission ID: ${submission.id}`);
+        })
+        .catch(err => {
+          console.error('Error sending admin notification:', err);
+        });
+      
+      // Отправка подтверждения пользователю, если указан email
+      if (email) {
+        sendUserConfirmation(submission)
+          .then(sent => {
+            console.log(`User confirmation ${sent ? 'sent' : 'failed'} for submission ID: ${submission.id}`);
+          })
+          .catch(err => {
+            console.error('Error sending user confirmation:', err);
+          });
+      }
       
       res.status(201).json(submission);
     } catch (error) {
