@@ -6,23 +6,42 @@ import {
   contactSubmissions, type ContactSubmission, type InsertContactSubmission
 } from "@shared/schema";
 import { IStorage } from "./storage";
-import { db, pool, getResultSetHeader } from "./db";
+import { db, pool } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
 import session from "express-session";
-import connectMySQL from "connect-mysql";
+import ConnectPgSimple from "connect-pg-simple";
 import memorystore from "memorystore";
 
-const MySQLStore = connectMySQL(session);
+const PgSession = ConnectPgSimple(session);
 
 export class DatabaseStorage implements IStorage {
   sessionStore: session.Store;
 
   constructor() {
-    // Создаем конфигурацию для хранения сессий
-    const MemoryStore = memorystore(session);
-    this.sessionStore = new MemoryStore({
-      checkPeriod: 86400000 // prune expired entries every 24h
-    });
+    // В production используем PgSession для хранения сессий в PostgreSQL
+    // В development используем MemoryStore для более быстрой разработки
+    if (process.env.NODE_ENV === 'production') {
+      try {
+        this.sessionStore = new PgSession({
+          pool: pool,
+          tableName: 'session', // название таблицы для сессий
+          createTableIfMissing: true // создать таблицу, если её нет
+        });
+      } catch (err) {
+        console.error('Failed to create PostgreSQL session store:', err);
+        // Fallback to memory store if PostgreSQL session fails
+        const MemoryStore = memorystore(session);
+        this.sessionStore = new MemoryStore({
+          checkPeriod: 86400000 // prune expired entries every 24h
+        });
+      }
+    } else {
+      // В development всегда используем MemoryStore
+      const MemoryStore = memorystore(session);
+      this.sessionStore = new MemoryStore({
+        checkPeriod: 86400000 // prune expired entries every 24h
+      });
+    }
     
     // Create default admin user if none exists
     this.getUserByUsername("admin").then(user => {
@@ -53,10 +72,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const result = await db.insert(users).values(insertUser);
-    const mysqlResult = getResultSetHeader(result);
-    const insertId = Number(mysqlResult.insertId);
-    const [user] = await db.select().from(users).where(eq(users.id, insertId));
+    const [user] = await db.insert(users).values(insertUser).returning();
     return user;
   }
 
@@ -81,7 +97,7 @@ export class DatabaseStorage implements IStorage {
     const existingContent = await this.getContent(
       insertContent.sectionType,
       insertContent.sectionKey,
-      insertContent.language
+      insertContent.language || 'ru'
     );
 
     if (existingContent) {
@@ -89,37 +105,37 @@ export class DatabaseStorage implements IStorage {
       await this.createContentRevision({
         contentId: existingContent.id,
         content: existingContent.content,
-        createdBy: insertContent.updatedBy
+        createdBy: insertContent.updatedBy || null
       });
 
       // Update the existing content
       return this.updateContent(existingContent.id, {
         content: insertContent.content,
         updatedAt: new Date(),
-        updatedBy: insertContent.updatedBy
+        updatedBy: insertContent.updatedBy || null
       }) as Promise<Content>;
     }
 
     // Create new content
-    const result = await db.insert(contents).values({
+    const [content] = await db.insert(contents).values({
       ...insertContent,
+      language: insertContent.language || 'ru',
       createdAt: new Date(),
-      updatedAt: new Date()
-    });
+      updatedAt: new Date(),
+      createdBy: insertContent.createdBy || null,
+      updatedBy: insertContent.updatedBy || null
+    }).returning();
     
-    const mysqlResult = getResultSetHeader(result);
-    const insertId = Number(mysqlResult.insertId);
-    const [content] = await db.select().from(contents).where(eq(contents.id, insertId));
     return content;
   }
 
   async updateContent(id: number, updatedFields: Partial<Content>): Promise<Content | undefined> {
-    await db
+    const [updatedContent] = await db
       .update(contents)
       .set(updatedFields)
-      .where(eq(contents.id, id));
+      .where(eq(contents.id, id))
+      .returning();
     
-    const [updatedContent] = await db.select().from(contents).where(eq(contents.id, id));
     return updatedContent;
   }
 
@@ -140,16 +156,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createContentRevision(insertRevision: InsertContentRevision): Promise<ContentRevision> {
-    const result = await db
+    const [revision] = await db
       .insert(contentRevisions)
       .values({
         ...insertRevision,
+        contentId: insertRevision.contentId,
+        createdBy: insertRevision.createdBy || null,
         createdAt: new Date()
-      });
-    
-    const mysqlResult = getResultSetHeader(result);
-    const insertId = Number(mysqlResult.insertId);
-    const [revision] = await db.select().from(contentRevisions).where(eq(contentRevisions.id, insertId));
+      })
+      .returning();
     
     // Get all revisions for this content
     const revisions = await this.getContentRevisions(insertRevision.contentId);
@@ -185,16 +200,16 @@ export class DatabaseStorage implements IStorage {
 
   // Media operations
   async createMedia(insertMedia: InsertMedia): Promise<Media> {
-    const result = await db
+    const [mediaItem] = await db
       .insert(media)
       .values({
         ...insertMedia,
+        category: insertMedia.category || null,
+        uploadedBy: insertMedia.uploadedBy || null,
         uploadedAt: new Date()
-      });
-    
-    const mysqlResult = getResultSetHeader(result);
-    const insertId = Number(mysqlResult.insertId);
-    const [mediaItem] = await db.select().from(media).where(eq(media.id, insertId));    
+      })
+      .returning();
+      
     return mediaItem;
   }
 
@@ -218,10 +233,10 @@ export class DatabaseStorage implements IStorage {
   async deleteMedia(id: number): Promise<boolean> {
     const result = await db
       .delete(media)
-      .where(eq(media.id, id));
+      .where(eq(media.id, id))
+      .returning();
     
-    const mysqlResult = getResultSetHeader(result);
-    return mysqlResult.affectedRows > 0;
+    return result.length > 0;
   }
 
   async getAllMedia(): Promise<Media[]> {
@@ -233,17 +248,18 @@ export class DatabaseStorage implements IStorage {
 
   // Contact submission operations
   async createContactSubmission(insertSubmission: InsertContactSubmission): Promise<ContactSubmission> {
-    const result = await db
+    const [submission] = await db
       .insert(contactSubmissions)
       .values({
         ...insertSubmission,
+        email: insertSubmission.email || null,
+        message: insertSubmission.message || null,
+        service: insertSubmission.service || null,
         createdAt: new Date(),
         processed: false
-      });
+      })
+      .returning();
     
-    const mysqlResult = getResultSetHeader(result);
-    const insertId = Number(mysqlResult.insertId);
-    const [submission] = await db.select().from(contactSubmissions).where(eq(contactSubmissions.id, insertId));
     return submission;
   }
 
@@ -264,12 +280,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateContactSubmission(id: number, data: Partial<ContactSubmission>): Promise<ContactSubmission | undefined> {
-    await db
+    const [updatedSubmission] = await db
       .update(contactSubmissions)
       .set(data)
-      .where(eq(contactSubmissions.id, id));
+      .where(eq(contactSubmissions.id, id))
+      .returning();
     
-    const [updatedSubmission] = await db.select().from(contactSubmissions).where(eq(contactSubmissions.id, id));    
     return updatedSubmission;
   }
 
