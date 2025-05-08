@@ -20,12 +20,14 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Save } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Loader2, Save, Globe, Languages } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import LanguageTabs from "./language-tabs";
 import RevisionHistory from "./revision-history";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // Schema for content form validation
 const contentFormSchema = z.object({
@@ -68,6 +70,8 @@ export default function ContentForm({
   const queryClient = useQueryClient();
   const [activeLanguage, setActiveLanguage] = useState<"ru" | "kz" | "en">(language);
   const [showHistory, setShowHistory] = useState(false);
+  const [autoTranslate, setAutoTranslate] = useState(false);
+  const [isTranslating, setIsTranslating] = useState(false);
 
   // Initialize forms for each language
   const ruForm = useForm<ContentFormData>({
@@ -118,6 +122,7 @@ export default function ContentForm({
       sectionKey: string;
       language: string;
       content: any;
+      autoTranslate?: boolean;
     }) => {
       const res = await apiRequest("POST", "/api/content", data);
       return res.json();
@@ -139,15 +144,64 @@ export default function ContentForm({
     },
   });
 
+  // Mutation для перевода контента
+  const translateMutation = useMutation({
+    mutationFn: async (data: {
+      content: any;
+      fields: string[];
+      sourceLang: "ru" | "kz" | "en";
+    }) => {
+      const res = await apiRequest("POST", "/api/translate/content", data);
+      return res.json();
+    },
+    onSuccess: (data) => {
+      // Обновляем формы переводов
+      if (data.kz) {
+        kzForm.reset(data.kz.content || {});
+      }
+      if (data.en) {
+        enForm.reset(data.en.content || {});
+      }
+
+      setIsTranslating(false);
+      toast({
+        title: "Перевод выполнен",
+        description: "Контент успешно переведен на другие языки",
+      });
+    },
+    onError: (error: Error) => {
+      setIsTranslating(false);
+      toast({
+        title: "Ошибка перевода",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
   const handleFormSubmit = async (data: ContentFormData) => {
     if (!user) return;
 
-    saveMutation.mutate({
-      sectionType,
-      sectionKey,
-      language: activeLanguage,
-      content: data,
-    });
+    // Если включен автоперевод и мы сохраняем русский текст
+    if (autoTranslate && activeLanguage === 'ru') {
+      setIsTranslating(true);
+
+      saveMutation.mutate({
+        sectionType,
+        sectionKey,
+        language: activeLanguage,
+        content: data,
+        autoTranslate: true, // Добавляем флаг для сервера
+      });
+    } else {
+      // Обычное сохранение без перевода
+      saveMutation.mutate({
+        sectionType,
+        sectionKey,
+        language: activeLanguage,
+        content: data,
+      });
+    }
   };
 
   const currentForm = getCurrentForm();
@@ -160,7 +214,35 @@ export default function ContentForm({
           onLanguageChange={setActiveLanguage}
         />
         
-        <div className="flex space-x-2">
+        <div className="flex items-center space-x-2">
+          {activeLanguage === 'ru' && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center mr-2">
+                    <Checkbox
+                      id="auto-translate"
+                      checked={autoTranslate}
+                      onCheckedChange={(checked) => setAutoTranslate(checked as boolean)}
+                      disabled={isTranslating || saveMutation.isPending}
+                      className="mr-2"
+                    />
+                    <label
+                      htmlFor="auto-translate"
+                      className="text-sm flex items-center cursor-pointer select-none"
+                    >
+                      <Globe className="h-4 w-4 mr-1" />
+                      Автоперевод
+                    </label>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Автоматически переводить содержимое на казахский и английский языки при сохранении</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          
           <Button
             variant="outline"
             onClick={() => setShowHistory(!showHistory)}
@@ -170,14 +252,18 @@ export default function ContentForm({
           
           <Button
             onClick={currentForm.handleSubmit(handleFormSubmit)}
-            disabled={saveMutation.isPending}
+            disabled={saveMutation.isPending || isTranslating}
           >
-            {saveMutation.isPending ? (
+            {saveMutation.isPending || isTranslating ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
               <Save className="mr-2 h-4 w-4" />
             )}
-            {translate("admin.save", language)}
+            {isTranslating 
+              ? "Перевод..." 
+              : saveMutation.isPending 
+                ? "Сохранение..." 
+                : translate("admin.save", language)}
           </Button>
         </div>
       </div>
