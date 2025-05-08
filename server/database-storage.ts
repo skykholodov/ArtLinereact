@@ -6,21 +6,26 @@ import {
   contactSubmissions, type ContactSubmission, type InsertContactSubmission
 } from "@shared/schema";
 import { IStorage } from "./storage";
-import { db } from "./db";
+import { db, pool, getResultSetHeader } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
 import session from "express-session";
-import connectPg from "connect-pg-simple";
-import { pool } from "./db";
+import connectMySQL from "connect-mysql";
 
-const PostgresSessionStore = connectPg(session);
+const MySQLStore = connectMySQL(session);
 
 export class DatabaseStorage implements IStorage {
   sessionStore: session.Store;
 
   constructor() {
-    this.sessionStore = new PostgresSessionStore({ 
-      pool, 
-      createTableIfMissing: true 
+    // Создаем конфигурацию для connect-mysql
+    this.sessionStore = new MySQLStore({
+      config: {
+        user: process.env.PGUSER,
+        password: process.env.PGPASSWORD,
+        host: process.env.PGHOST,
+        port: Number(process.env.PGPORT),
+        database: process.env.PGDATABASE
+      }
     });
     
     // Create default admin user if none exists
@@ -28,7 +33,7 @@ export class DatabaseStorage implements IStorage {
       if (!user) {
         this.createUser({
           username: "admin",
-          password: "$2b$10$9eK/pNuVHqPQ5zvHqCHCGu4mO.vbCTnD7IRyEHr5fFwf.QE5xorSi", // "admin123" hashed
+          password: "$2b$10$9eK/pNuVHqPQ5zvHqCHCGu4mO.vbCTnD7IRyEHr5fFwf.QE5xorSi", // "password" hashed
           name: "Administrator",
           isAdmin: true
         }).then(user => {
@@ -52,7 +57,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db.insert(users).values(insertUser).returning();
+    const result = await db.insert(users).values(insertUser);
+    const mysqlResult = getResultSetHeader(result);
+    const insertId = Number(mysqlResult.insertId);
+    const [user] = await db.select().from(users).where(eq(users.id, insertId));
     return user;
   }
 
@@ -97,22 +105,25 @@ export class DatabaseStorage implements IStorage {
     }
 
     // Create new content
-    const [content] = await db.insert(contents).values({
+    const result = await db.insert(contents).values({
       ...insertContent,
       createdAt: new Date(),
       updatedAt: new Date()
-    }).returning();
+    });
     
+    const mysqlResult = getResultSetHeader(result);
+    const insertId = Number(mysqlResult.insertId);
+    const [content] = await db.select().from(contents).where(eq(contents.id, insertId));
     return content;
   }
 
   async updateContent(id: number, updatedFields: Partial<Content>): Promise<Content | undefined> {
-    const [updatedContent] = await db
+    await db
       .update(contents)
       .set(updatedFields)
-      .where(eq(contents.id, id))
-      .returning();
+      .where(eq(contents.id, id));
     
+    const [updatedContent] = await db.select().from(contents).where(eq(contents.id, id));
     return updatedContent;
   }
 
@@ -133,13 +144,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createContentRevision(insertRevision: InsertContentRevision): Promise<ContentRevision> {
-    const [revision] = await db
+    const result = await db
       .insert(contentRevisions)
       .values({
         ...insertRevision,
         createdAt: new Date()
-      })
-      .returning();
+      });
+    
+    const mysqlResult = getResultSetHeader(result);
+    const insertId = Number(mysqlResult.insertId);
+    const [revision] = await db.select().from(contentRevisions).where(eq(contentRevisions.id, insertId));
     
     // Get all revisions for this content
     const revisions = await this.getContentRevisions(insertRevision.contentId);
@@ -147,18 +161,18 @@ export class DatabaseStorage implements IStorage {
     // If we have more than 5 revisions, delete the oldest ones
     if (revisions.length > 5) {
       const revisionsToKeep = revisions.slice(0, 5);
-      const lastKeptRevisionId = revisionsToKeep[revisionsToKeep.length - 1].id;
       
-      await db
-        .delete(contentRevisions)
-        .where(
-          and(
-            eq(contentRevisions.contentId, insertRevision.contentId),
-            revisions.filter(r => !revisionsToKeep.some(kr => kr.id === r.id))
-              .map(r => eq(contentRevisions.id, r.id))
-              .reduce((prev, curr) => prev || curr)
-          )
-        );
+      // Find revisions to delete (all except the 5 most recent)
+      const revisionsToDelete = revisions.filter(
+        rev => !revisionsToKeep.some(kr => kr.id === rev.id)
+      );
+      
+      // Delete each revision individually
+      for (const revToDelete of revisionsToDelete) {
+        await db
+          .delete(contentRevisions)
+          .where(eq(contentRevisions.id, revToDelete.id));
+      }
     }
     
     return revision;
@@ -175,15 +189,17 @@ export class DatabaseStorage implements IStorage {
 
   // Media operations
   async createMedia(insertMedia: InsertMedia): Promise<Media> {
-    const [mediaItem] = await db
-      .insert(media as any)
+    const result = await db
+      .insert(media)
       .values({
         ...insertMedia,
         uploadedAt: new Date()
-      })
-      .returning();
+      });
     
-    return mediaItem as Media;
+    const mysqlResult = asMySqlResult(result);
+    const insertId = Number(mysqlResult.insertId);
+    const [mediaItem] = await db.select().from(media).where(eq(media.id, insertId));    
+    return mediaItem;
   }
 
   async getMediaById(id: number): Promise<Media | undefined> {
@@ -206,10 +222,10 @@ export class DatabaseStorage implements IStorage {
   async deleteMedia(id: number): Promise<boolean> {
     const result = await db
       .delete(media)
-      .where(eq(media.id, id))
-      .returning({ id: media.id });
+      .where(eq(media.id, id));
     
-    return result.length > 0;
+    const mysqlResult = asMySqlResult(result);
+    return mysqlResult.affectedRows > 0;
   }
 
   async getAllMedia(): Promise<Media[]> {
@@ -221,15 +237,17 @@ export class DatabaseStorage implements IStorage {
 
   // Contact submission operations
   async createContactSubmission(insertSubmission: InsertContactSubmission): Promise<ContactSubmission> {
-    const [submission] = await db
+    const result = await db
       .insert(contactSubmissions)
       .values({
         ...insertSubmission,
         createdAt: new Date(),
         processed: false
-      })
-      .returning();
+      });
     
+    const mysqlResult = asMySqlResult(result);
+    const insertId = Number(mysqlResult.insertId);
+    const [submission] = await db.select().from(contactSubmissions).where(eq(contactSubmissions.id, insertId));
     return submission;
   }
 
@@ -250,12 +268,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateContactSubmission(id: number, data: Partial<ContactSubmission>): Promise<ContactSubmission | undefined> {
-    const [updatedSubmission] = await db
+    await db
       .update(contactSubmissions)
       .set(data)
-      .where(eq(contactSubmissions.id, id))
-      .returning();
+      .where(eq(contactSubmissions.id, id));
     
+    const [updatedSubmission] = await db.select().from(contactSubmissions).where(eq(contactSubmissions.id, id));    
     return updatedSubmission;
   }
 
