@@ -10,6 +10,7 @@ import { db, pool, getResultSetHeader } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
 import session from "express-session";
 import connectMySQL from "connect-mysql";
+import { Json } from "drizzle-orm/mysql-core";
 
 const MySQLStore = connectMySQL(session);
 
@@ -92,7 +93,7 @@ export class DatabaseStorage implements IStorage {
       // Create revision of the existing content before updating
       await this.createContentRevision({
         contentId: existingContent.id,
-        content: existingContent.content,
+        content: existingContent.content as Json,
         createdBy: insertContent.updatedBy
       });
 
@@ -196,7 +197,7 @@ export class DatabaseStorage implements IStorage {
         uploadedAt: new Date()
       });
     
-    const mysqlResult = asMySqlResult(result);
+    const mysqlResult = getResultSetHeader(result);
     const insertId = Number(mysqlResult.insertId);
     const [mediaItem] = await db.select().from(media).where(eq(media.id, insertId));    
     return mediaItem;
@@ -224,7 +225,7 @@ export class DatabaseStorage implements IStorage {
       .delete(media)
       .where(eq(media.id, id));
     
-    const mysqlResult = asMySqlResult(result);
+    const mysqlResult = getResultSetHeader(result);
     return mysqlResult.affectedRows > 0;
   }
 
@@ -245,7 +246,7 @@ export class DatabaseStorage implements IStorage {
         processed: false
       });
     
-    const mysqlResult = asMySqlResult(result);
+    const mysqlResult = getResultSetHeader(result);
     const insertId = Number(mysqlResult.insertId);
     const [submission] = await db.select().from(contactSubmissions).where(eq(contactSubmissions.id, insertId));
     return submission;
