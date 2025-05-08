@@ -93,31 +93,71 @@ export async function saveContent(req: Request, res: Response) {
     // выполняем автоматический перевод на другие языки
     if (language === 'ru' && req.body.autoTranslate === true) {
       try {
+        console.log(`Starting auto-translation for ${sectionType}/${sectionKey}`);
+        
         // Определяем поля для перевода в зависимости от типа контента
         let fieldsToTranslate: ContentField[] = ['content'];
         
         // Для определенных типов разделов добавляем дополнительные поля
         if (sectionType === 'hero' || sectionType === 'services' || sectionType === 'about') {
           fieldsToTranslate = ['title', 'description', 'content'];
+        } else if (sectionType === 'portfolio' || sectionType === 'testimonials') {
+          // Для разделов с массивами элементов
+          fieldsToTranslate = ['title', 'description', 'items', 'content'];
         }
         
+        // Получаем контент для перевода (используем содержимое тела запроса)
+        const contentToTranslate = {
+          ...req.body,
+          content: req.body.content // Используем содержимое из запроса
+        };
+        
         // Автоматически переводим контент на все поддерживаемые языки
-        const translations = await translateContent({ ...req.body }, fieldsToTranslate, 'ru');
+        const translations = await translateContent(contentToTranslate, fieldsToTranslate, 'ru');
+        
+        console.log(`Translation completed, saving translations to database...`);
         
         // Сохраняем переводы для других языков
         const savePromises = Object.entries(translations)
           .filter(([lang]) => lang !== 'ru') // Пропускаем русский, он уже сохранен
           .map(async ([lang, translatedContent]) => {
             try {
-              // Создаем новый контент с переведенными данными
-              return await storage.createContent({
+              // Получаем существующий контент для данного языка (если есть)
+              const existingContent = await storage.getContent(
                 sectionType,
                 sectionKey,
-                language: lang as Language,
-                content: translatedContent.content,
-                createdBy: userId,
-                updatedBy: userId
-              });
+                lang as Language
+              );
+              
+              if (existingContent) {
+                // Если контент уже существует, обновляем его
+                console.log(`Updating existing ${lang} content for ${sectionType}/${sectionKey}`);
+                
+                // Создаем ревизию старого контента
+                await storage.createContentRevision({
+                  contentId: existingContent.id,
+                  content: existingContent.content,
+                  createdBy: userId
+                });
+                
+                // Обновляем контент
+                return await storage.updateContent(existingContent.id, {
+                  content: translatedContent.content,
+                  updatedAt: new Date(),
+                  updatedBy: userId
+                });
+              } else {
+                // Если контента еще нет, создаем новый
+                console.log(`Creating new ${lang} content for ${sectionType}/${sectionKey}`);
+                return await storage.createContent({
+                  sectionType,
+                  sectionKey,
+                  language: lang as Language,
+                  content: translatedContent.content,
+                  createdBy: userId,
+                  updatedBy: userId
+                });
+              }
             } catch (err) {
               console.error(`Error saving ${lang} translation:`, err);
               return null;
@@ -125,12 +165,14 @@ export async function saveContent(req: Request, res: Response) {
           });
         
         // Ждем выполнения всех операций сохранения
-        await Promise.all(savePromises);
+        const savedTranslations = await Promise.all(savePromises);
+        const successfulTranslations = savedTranslations.filter(Boolean);
         
         // Возвращаем успешный ответ с информацией о переводах
         return res.status(201).json({
           original: savedContent,
           translationsCreated: true,
+          translationCount: successfulTranslations.length,
           languages: ['kz', 'en']
         });
       } catch (translationError) {
