@@ -13,6 +13,7 @@ import AdminPortfolio from "@/pages/admin/portfolio";
 import AdminAbout from "@/pages/admin/about";
 import AdminTestimonials from "@/pages/admin/testimonials";
 import AdminContacts from "@/pages/admin/contacts";
+import AdminMap from "@/pages/admin/map";
 
 function Router() {
   return (
@@ -25,6 +26,7 @@ function Router() {
       <ProtectedRoute path="/admin/about" component={AdminAbout} />
       <ProtectedRoute path="/admin/testimonials" component={AdminTestimonials} />
       <ProtectedRoute path="/admin/contacts" component={AdminContacts} />
+      <ProtectedRoute path="/admin/map" component={AdminMap} />
       <Route component={NotFound} />
     </Switch>
   );

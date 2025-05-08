@@ -11,7 +11,8 @@ import {
   Info,
   LogOut,
   Globe,
-  ChevronDown
+  ChevronDown,
+  MapPin
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -102,6 +103,11 @@ export default function Sidebar() {
           </NavItem>
           <NavItem href="/admin/contacts" icon={<MessageSquare size={20} />}>
             {translate("admin.contacts", language)}
+          </NavItem>
+          <NavItem href="/admin/map" icon={<MapPin size={20} />}>
+            {language === "ru" ? "Карта" : 
+             language === "kz" ? "Карта" : 
+             "Map"}
           </NavItem>
         </nav>
       </div>
