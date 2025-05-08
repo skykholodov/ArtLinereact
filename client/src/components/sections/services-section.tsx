@@ -7,12 +7,12 @@ import {
 // Icon mapping for easy rendering
 // Responsive icon sizes for different screen sizes
 const iconMap: Record<string, React.ReactNode> = {
-  "palette": <Palette className="text-accent text-xl sm:text-2xl" />,
-  "store-alt": <Store className="text-accent text-xl sm:text-2xl" />,
-  "car": <Car className="text-accent text-xl sm:text-2xl" />,
-  "calendar-alt": <CalendarDays className="text-accent text-xl sm:text-2xl" />,
-  "print": <Printer className="text-accent text-xl sm:text-2xl" />,
-  "laptop-code": <Laptop className="text-accent text-xl sm:text-2xl" />
+  "palette": <Palette className="text-accent text-xl sm:text-2xl service-icon" />,
+  "store-alt": <Store className="text-accent text-xl sm:text-2xl service-icon" />,
+  "car": <Car className="text-accent text-xl sm:text-2xl service-icon" />,
+  "calendar-alt": <CalendarDays className="text-accent text-xl sm:text-2xl service-icon" />,
+  "print": <Printer className="text-accent text-xl sm:text-2xl service-icon" />,
+  "laptop-code": <Laptop className="text-accent text-xl sm:text-2xl service-icon" />
 };
 
 export default function ServicesSection() {
@@ -26,11 +26,11 @@ export default function ServicesSection() {
   ];
 
   return (
-    <section id="services" className="py-12 sm:py-16 md:py-20 bg-white">
+    <section id="services" className="py-12 sm:py-16 md:py-20 bg-background">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="text-center mb-10 sm:mb-12 md:mb-16">
           <h2 className="text-2xl sm:text-3xl md:text-4xl mb-3 md:mb-4 font-bold">{translate("services.title", language)}</h2>
-          <p className="max-w-2xl mx-auto text-base sm:text-lg text-gray-700">
+          <p className="max-w-2xl mx-auto text-base sm:text-lg text-gray-700 dark:text-muted-foreground">
             {translate("services.description", language)}
           </p>
         </div>
@@ -41,7 +41,7 @@ export default function ServicesSection() {
             JSON.parse(JSON.stringify(translate("services.items", language))).map((item: any, index: number) => (
               <div 
                 key={index}
-                className="bg-background rounded-lg shadow-md overflow-hidden transition-transform hover:transform hover:scale-105"
+                className="bg-background rounded-lg shadow-md overflow-hidden transition-transform hover:transform hover:scale-105 service-card"
               >
                 <img 
                   src={serviceImages[index % serviceImages.length]} // Use modulo to handle case with more items than images
@@ -50,8 +50,8 @@ export default function ServicesSection() {
                   loading="lazy"
                 />
                 <div className="p-4 sm:p-5 md:p-6">
-                  <h3 className="font-montserrat font-semibold text-lg sm:text-xl mb-2 sm:mb-3 line-clamp-2">{item.title}</h3>
-                  <p className="text-gray-600 text-sm sm:text-base line-clamp-3">{item.description}</p>
+                  <h3 className="font-montserrat font-semibold text-lg sm:text-xl mb-2 sm:mb-3 line-clamp-2 service-title">{item.title}</h3>
+                  <p className="text-gray-600 dark:text-muted-foreground text-sm sm:text-base line-clamp-3 service-description">{item.description}</p>
                 </div>
               </div>
             ))
@@ -68,13 +68,13 @@ export default function ServicesSection() {
               JSON.parse(JSON.stringify(translate("services.features", language))).map((feature: any, index: number) => (
                 <div 
                   key={index}
-                  className="p-4 sm:p-5 md:p-6 bg-background rounded-lg shadow-sm flex flex-col items-center text-center"
+                  className="p-4 sm:p-5 md:p-6 bg-background rounded-lg shadow-sm flex flex-col items-center text-center service-card"
                 >
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-accent/10 flex items-center justify-center mb-3 sm:mb-4">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-accent/10 dark:bg-primary/20 flex items-center justify-center mb-3 sm:mb-4">
                     {iconMap[feature.icon]}
                   </div>
-                  <h4 className="font-montserrat font-semibold text-base sm:text-lg mb-1 sm:mb-2 line-clamp-2">{feature.title}</h4>
-                  <p className="text-gray-600 text-sm sm:text-base line-clamp-3">{feature.description}</p>
+                  <h4 className="font-montserrat font-semibold text-base sm:text-lg mb-1 sm:mb-2 line-clamp-2 service-title">{feature.title}</h4>
+                  <p className="text-gray-600 dark:text-muted-foreground text-sm sm:text-base line-clamp-3 service-description">{feature.description}</p>
                 </div>
               ))
             }
