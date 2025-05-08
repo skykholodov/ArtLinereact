@@ -2,6 +2,7 @@ import { Link, useLocation } from "wouter";
 import { useLanguage } from "@/hooks/use-language";
 import { useAuth } from "@/hooks/use-auth";
 import { translate } from "@/lib/i18n";
+import { useState, useEffect } from "react";
 import { 
   LayoutDashboard,
   FileText,
@@ -12,7 +13,9 @@ import {
   LogOut,
   Globe,
   ChevronDown,
-  MapPin
+  MapPin,
+  Menu,
+  X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -60,10 +63,17 @@ const NavItem = ({ href, icon, children }: NavItemProps) => {
 export default function Sidebar() {
   const { language, setLanguage } = useLanguage();
   const { user, logoutMutation } = useAuth();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [location] = useLocation();
   
   const handleLogout = () => {
     logoutMutation.mutate();
   };
+
+  // Close mobile menu when changing location
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location]);
 
   // Language name mapping
   const languageNames = {
@@ -72,13 +82,9 @@ export default function Sidebar() {
     en: "English",
   };
 
-  return (
-    <div className="w-64 bg-card border-r min-h-screen p-4 flex flex-col">
-      <div className="flex items-center space-x-2 px-2 mb-8">
-        <ArtLineLogo />
-        <span className="font-montserrat font-bold text-primary text-xl">ART-LINE</span>
-      </div>
-      
+  // Main sidebar content (reused between desktop and mobile views)
+  const SidebarContent = () => (
+    <>
       <div className="mb-6">
         <p className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
           {language === "ru" ? "Меню" : 
@@ -154,6 +160,55 @@ export default function Sidebar() {
           {translate("admin.logout", language)}
         </Button>
       </div>
-    </div>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile hamburger button */}
+      <div className="lg:hidden fixed top-0 left-0 w-full bg-card z-50 px-4 py-3 border-b flex justify-between items-center">
+        <div className="flex items-center space-x-2">
+          <ArtLineLogo />
+          <span className="font-montserrat font-bold text-primary text-lg">ART-LINE</span>
+        </div>
+        <Button 
+          variant="ghost" 
+          size="icon"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        >
+          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </Button>
+      </div>
+      
+      {/* Mobile menu overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+      
+      {/* Desktop sidebar */}
+      <div className="hidden lg:flex w-64 bg-card border-r min-h-screen p-4 flex-col">
+        <div className="flex items-center space-x-2 px-2 mb-8">
+          <ArtLineLogo />
+          <span className="font-montserrat font-bold text-primary text-xl">ART-LINE</span>
+        </div>
+        <SidebarContent />
+      </div>
+      
+      {/* Mobile sidebar */}
+      <div 
+        className={`lg:hidden fixed top-0 left-0 w-[85%] max-w-[300px] bg-card h-screen z-50 p-4 shadow-xl flex flex-col transition-transform duration-300 ease-in-out ${
+          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+        style={{ paddingTop: "4.5rem" }} // Space for the header
+      >
+        <SidebarContent />
+      </div>
+      
+      {/* Extra padding for content on mobile to account for the fixed header */}
+      <div className="lg:hidden h-[60px]"></div>
+    </>
   );
 }
