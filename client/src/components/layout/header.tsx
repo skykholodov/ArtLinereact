@@ -144,7 +144,7 @@ export default function Header() {
           {/* Language Selector */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="flex items-center space-x-1">
+              <Button variant="ghost" size="sm" className="flex items-center space-x-1 language-dropdown">
                 <Globe className="h-4 w-4" />
                 <span>{languageNames[language]}</span>
                 <ChevronDown className="h-4 w-4" />

@@ -1,5 +1,26 @@
 export const translations = {
   ru: {
+    // Onboarding walkthrough
+    onboarding: {
+      welcome: "Добро пожаловать на сайт Art Line!",
+      welcomeMessage: "Давайте познакомимся с основными разделами сайта. Нажмите 'Далее', чтобы продолжить.",
+      services: "Наши услуги",
+      servicesMessage: "Здесь представлены все наши рекламные услуги. Выберите нужную вам категорию для получения подробной информации.",
+      portfolio: "Портфолио",
+      portfolioMessage: "Ознакомьтесь с нашими лучшими работами и проектами. Вы можете фильтровать проекты по категориям.",
+      about: "О нас",
+      aboutMessage: "Узнайте больше о нашей компании, нашем опыте и преимуществах работы с нами.",
+      contacts: "Контакты",
+      contactsMessage: "Здесь вы можете оставить заявку или найти наши контактные данные для связи.",
+      langSwitcher: "Переключение языка",
+      langSwitcherMessage: "Выберите удобный для вас язык: русский, казахский или английский.",
+      finish: "Завершить",
+      next: "Далее",
+      prev: "Назад",
+      skip: "Пропустить",
+      last: "Отлично!",
+      lastMessage: "Теперь вы знаете всё о нашем сайте. Если у вас возникнут вопросы, свяжитесь с нами через форму обратной связи."
+    },
     // Navigation
     nav: {
       home: "Главная",
@@ -186,6 +207,27 @@ export const translations = {
   },
   
   kz: {
+    // Onboarding walkthrough
+    onboarding: {
+      welcome: "Art Line сайтына қош келдіңіз!",
+      welcomeMessage: "Сайттың негізгі бөлімдерімен танысайық. Жалғастыру үшін 'Келесі' түймесін басыңыз.",
+      services: "Біздің қызметтер",
+      servicesMessage: "Мұнда біздің барлық жарнамалық қызметтеріміз көрсетілген. Толық ақпарат алу үшін қажетті санатты таңдаңыз.",
+      portfolio: "Портфолио",
+      portfolioMessage: "Біздің үздік жұмыстарымызбен және жобаларымызбен танысыңыз. Сіз жобаларды санаттар бойынша сүзгілей аласыз.",
+      about: "Біз туралы",
+      aboutMessage: "Біздің компания, тәжірибеміз және бізбен жұмыс істеудің артықшылықтары туралы көбірек біліңіз.",
+      contacts: "Байланыс",
+      contactsMessage: "Мұнда сіз өтінім қалдыра аласыз немесе байланысу үшін біздің байланыс деректерімізді таба аласыз.",
+      langSwitcher: "Тілді ауыстыру",
+      langSwitcherMessage: "Өзіңізге ыңғайлы тілді таңдаңыз: орыс, қазақ немесе ағылшын.",
+      finish: "Аяқтау",
+      next: "Келесі",
+      prev: "Артқа",
+      skip: "Өткізіп жіберу",
+      last: "Керемет!",
+      lastMessage: "Енді сіз біздің сайт туралы бәрін білесіз. Егер сұрақтарыңыз болса, кері байланыс формасы арқылы бізбен байланысыңыз."
+    },
     // Navigation
     nav: {
       home: "Басты",
@@ -372,6 +414,27 @@ export const translations = {
   },
   
   en: {
+    // Onboarding walkthrough
+    onboarding: {
+      welcome: "Welcome to Art Line website!",
+      welcomeMessage: "Let's explore the main sections of the site. Click 'Next' to continue.",
+      services: "Our Services",
+      servicesMessage: "Here are all our advertising services. Choose the category you need for detailed information.",
+      portfolio: "Portfolio",
+      portfolioMessage: "Check out our best works and projects. You can filter projects by categories.",
+      about: "About Us",
+      aboutMessage: "Learn more about our company, our experience, and the benefits of working with us.",
+      contacts: "Contacts",
+      contactsMessage: "Here you can submit a request or find our contact information.",
+      langSwitcher: "Language Switching",
+      langSwitcherMessage: "Choose a language that is convenient for you: Russian, Kazakh, or English.",
+      finish: "Finish",
+      next: "Next",
+      prev: "Back",
+      skip: "Skip",
+      last: "Great!",
+      lastMessage: "Now you know everything about our website. If you have any questions, please contact us through the feedback form."
+    },
     // Navigation
     nav: {
       home: "Home",
