@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { storage } from "../storage";
 import { z } from "zod";
+import { translateContent, type Language, type ContentField } from "../services/translation";
 
 // Schema for content request validation
 const contentRequestSchema = z.object({
@@ -87,6 +88,62 @@ export async function saveContent(req: Request, res: Response) {
       updatedBy: userId
     });
     
+    // Если сохраняется русскоязычный контент и включена опция автоперевода,
+    // выполняем автоматический перевод на другие языки
+    if (language === 'ru' && req.body.autoTranslate === true) {
+      try {
+        // Определяем поля для перевода в зависимости от типа контента
+        let fieldsToTranslate: ContentField[] = ['content'];
+        
+        // Для определенных типов разделов добавляем дополнительные поля
+        if (sectionType === 'hero' || sectionType === 'services' || sectionType === 'about') {
+          fieldsToTranslate = ['title', 'description', 'content'];
+        }
+        
+        // Автоматически переводим контент на все поддерживаемые языки
+        const translations = await translateContent({ ...req.body }, fieldsToTranslate, 'ru');
+        
+        // Сохраняем переводы для других языков
+        const savePromises = Object.entries(translations)
+          .filter(([lang]) => lang !== 'ru') // Пропускаем русский, он уже сохранен
+          .map(async ([lang, translatedContent]) => {
+            try {
+              // Создаем новый контент с переведенными данными
+              return await storage.createContent({
+                sectionType,
+                sectionKey,
+                language: lang as Language,
+                content: translatedContent.content,
+                createdBy: userId,
+                updatedBy: userId
+              });
+            } catch (err) {
+              console.error(`Error saving ${lang} translation:`, err);
+              return null;
+            }
+          });
+        
+        // Ждем выполнения всех операций сохранения
+        await Promise.all(savePromises);
+        
+        // Возвращаем успешный ответ с информацией о переводах
+        return res.status(201).json({
+          original: savedContent,
+          translationsCreated: true,
+          languages: ['kz', 'en']
+        });
+      } catch (translationError) {
+        console.error("Error during auto-translation:", translationError);
+        // Возвращаем ответ об успешном сохранении оригинала, но с ошибкой перевода
+        return res.status(201).json({
+          original: savedContent,
+          translationsCreated: false,
+          translationError: "Не удалось автоматически перевести контент"
+        });
+      }
+    }
+    
+    // Стандартный ответ без переводов
     res.status(201).json(savedContent);
   } catch (error) {
     console.error("Error saving content:", error);

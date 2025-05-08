@@ -11,6 +11,7 @@ import {
 import { uploadFiles, getMedia, deleteMedia } from "./controllers/upload";
 import { bulkImport } from "./controllers/bulk-import";
 import { sendAdminNotification, sendUserConfirmation } from "./services/email";
+import { translateText, translateContent, detectLanguage } from "./services/translation";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -261,6 +262,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching testimonial items:", error);
       res.status(500).json({ message: "Error fetching testimonial items" });
+    }
+  });
+
+  // API для перевода отдельного текста
+  app.post("/api/translate/text", isAuthenticated, async (req, res) => {
+    try {
+      const { text, targetLang, sourceLang = "ru" } = req.body;
+      
+      if (!text || !targetLang) {
+        return res.status(400).json({ message: "Text and target language are required" });
+      }
+      
+      if (!["ru", "kz", "en"].includes(targetLang)) {
+        return res.status(400).json({ message: "Invalid target language. Supported: ru, kz, en" });
+      }
+      
+      const translatedText = await translateText(text, targetLang, sourceLang);
+      res.json({ translatedText });
+    } catch (error) {
+      console.error("Error translating text:", error);
+      res.status(500).json({ message: "Error translating text" });
+    }
+  });
+  
+  // API для автоматического перевода контента при сохранении
+  app.post("/api/translate/content", isAuthenticated, async (req, res) => {
+    try {
+      const { content, fields, sourceLang = "ru" } = req.body;
+      
+      if (!content || !fields || !Array.isArray(fields)) {
+        return res.status(400).json({ message: "Content object and fields array are required" });
+      }
+      
+      const translations = await translateContent(content, fields, sourceLang);
+      res.json(translations);
+    } catch (error) {
+      console.error("Error translating content:", error);
+      res.status(500).json({ message: "Error translating content" });
+    }
+  });
+  
+  // API для определения языка текста
+  app.post("/api/detect-language", isAuthenticated, async (req, res) => {
+    try {
+      const { text } = req.body;
+      
+      if (!text) {
+        return res.status(400).json({ message: "Text is required" });
+      }
+      
+      const language = await detectLanguage(text);
+      res.json({ language });
+    } catch (error) {
+      console.error("Error detecting language:", error);
+      res.status(500).json({ message: "Error detecting language" });
     }
   });
 
