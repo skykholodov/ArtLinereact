@@ -12,8 +12,15 @@ export default function MapSection() {
   const { language } = useLanguage();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<google.maps.Map | null>(null);
-
+  const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
+  
   useEffect(() => {
+    // Skip map initialization if API key is not provided
+    if (!googleMapsApiKey) {
+      console.warn("Google Maps API key not provided. Map will not be displayed.");
+      return;
+    }
+    
     // Initialize map only once when component mounts
     if (!mapInstance.current && mapRef.current) {
       // Load Google Maps API
@@ -22,7 +29,7 @@ export default function MapSection() {
         if (!existingScript) {
           const script = document.createElement('script');
           script.id = 'google-maps-script';
-          script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.GOOGLE_MAPS_API_KEY || process.env.VITE_GOOGLE_MAPS_API_KEY || ""}&callback=initMap`;
+          script.src = `https://maps.googleapis.com/maps/api/js?key=${googleMapsApiKey}&callback=initMap`;
           script.async = true;
           script.defer = true;
           document.head.appendChild(script);

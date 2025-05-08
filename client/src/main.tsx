@@ -3,11 +3,15 @@ import App from "./App";
 import "./index.css";
 import { AuthProvider } from "./hooks/use-auth";
 import { LanguageProvider } from "./hooks/use-language";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "./lib/queryClient";
 
 createRoot(document.getElementById("root")!).render(
-  <LanguageProvider>
-    <AuthProvider>
-      <App />
-    </AuthProvider>
-  </LanguageProvider>
+  <QueryClientProvider client={queryClient}>
+    <LanguageProvider>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </LanguageProvider>
+  </QueryClientProvider>
 );
