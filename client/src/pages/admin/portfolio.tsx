@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import Sidebar from "@/components/admin/sidebar";
 import ContentForm from "@/components/admin/content-form";
 import ImageUpload from "@/components/admin/image-upload";
+import BulkImportForm from "@/components/admin/bulk-import-form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Content } from "@shared/schema";
 import { Button } from "@/components/ui/button";
@@ -128,6 +129,11 @@ export default function AdminPortfolio() {
                 {language === "ru" ? "Изображения" : 
                  language === "kz" ? "Суреттер" : 
                  "Images"}
+              </TabsTrigger>
+              <TabsTrigger value="import">
+                {language === "ru" ? "Импорт" : 
+                 language === "kz" ? "Импорт" : 
+                 "Import"}
               </TabsTrigger>
             </TabsList>
             
@@ -320,6 +326,49 @@ export default function AdminPortfolio() {
                       </p>
                     </div>
                   )}
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="import" className="space-y-6">
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-xl font-semibold mb-4">
+                  {language === "ru" ? "Массовый импорт портфолио" : 
+                   language === "kz" ? "Портфолионы жаппай импорттау" : 
+                   "Bulk import portfolio"}
+                </h2>
+                
+                <p className="mb-6 text-muted-foreground">
+                  {language === "ru" ? "Используйте эту форму для массового импорта проектов портфолио. Вы можете импортировать данные в формате JSON или CSV." : 
+                   language === "kz" ? "Портфолио жобаларын жаппай импорттау үшін осы пішінді пайдаланыңыз. Деректерді JSON немесе CSV форматында импорттай аласыз." : 
+                   "Use this form to bulk import portfolio projects. You can import data in JSON or CSV format."}
+                </p>
+                
+                <BulkImportForm />
+                
+                <div className="mt-6 p-4 bg-muted rounded-md">
+                  <h3 className="text-sm font-semibold mb-2">
+                    {language === "ru" ? "Советы по импорту" : 
+                     language === "kz" ? "Импорттау кеңестері" : 
+                     "Import tips"}
+                  </h3>
+                  <ul className="text-sm space-y-2 text-muted-foreground">
+                    <li>
+                      {language === "ru" ? "Все элементы портфолио будут импортированы как новые записи." : 
+                       language === "kz" ? "Барлық портфолио элементтері жаңа жазбалар ретінде импортталады." : 
+                       "All portfolio items will be imported as new entries."}
+                    </li>
+                    <li>
+                      {language === "ru" ? "Убедитесь, что данные соответствуют ожидаемой структуре. Проверьте примеры форматов." : 
+                       language === "kz" ? "Деректердің күтілетін құрылымға сәйкес келетініне көз жеткізіңіз. Формат мысалдарын тексеріңіз." : 
+                       "Make sure your data matches the expected structure. Check the format examples."}
+                    </li>
+                    <li>
+                      {language === "ru" ? "Если возникают ошибки, попробуйте импортировать меньшие наборы данных." : 
+                       language === "kz" ? "Қателер болса, кішірек деректер жиынтығын импорттап көріңіз." : 
+                       "If you encounter errors, try importing smaller sets of data."}
+                    </li>
+                  </ul>
                 </div>
               </div>
             </TabsContent>

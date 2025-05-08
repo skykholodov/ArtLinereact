@@ -9,6 +9,7 @@ import {
   restoreContentRevision 
 } from "./controllers/content";
 import { uploadFiles, getMedia, deleteMedia } from "./controllers/upload";
+import { bulkImport } from "./controllers/bulk-import";
 import { sendAdminNotification, sendUserConfirmation } from "./services/email";
 import multer from "multer";
 import path from "path";
@@ -87,6 +88,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/upload", isAuthenticated, upload.array("files", 10), uploadFiles);
   app.get("/api/media", getMedia);
   app.delete("/api/media/:id", isAuthenticated, deleteMedia);
+  
+  // Массовый импорт контента
+  app.post("/api/bulk-import", isAuthenticated, bulkImport);
 
   // Stats API
   app.get("/api/stats", isAuthenticated, async (req, res) => {
