@@ -26,25 +26,25 @@
 }
 
 .dark {
-  --background: 222 47% 11%;
+  --background: 217 33% 17%;
   --foreground: 210 40% 98%;
-  --muted: 217 33% 17%;
-  --muted-foreground: 215 20% 75%;
-  --popover: 222 45% 7%;
+  --muted: 218 25% 22%;
+  --muted-foreground: 215 25% 80%;
+  --popover: 217 33% 17%;
   --popover-foreground: 210 40% 98%;
-  --card: 222 47% 11%;
+  --card: 217 33% 20%;
   --card-foreground: 210 40% 98%;
-  --border: 217 33% 17%;
-  --input: 217 33% 17%;
-  --primary: 210 40% 30%;
+  --border: 216 34% 25%;
+  --input: 217 33% 20%;
+  --primary: 210 40% 36%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 5 90% 57%;
+  --secondary: 5 80% 60%;
   --secondary-foreground: 0 0% 100%;
-  --accent: 206 81% 53%;
+  --accent: 210 80% 60%;
   --accent-foreground: 0 0% 100%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
-  --ring: 215 20% 65%;
+  --ring: 215 25% 65%;
   --radius: 0.5rem;
 }
 
@@ -151,6 +151,27 @@
 
 .dark .section-divider {
   @apply border-border;
+}
+
+/* Стили для карточек сервисов в темной теме */
+.dark .service-card {
+  @apply bg-card border-border shadow-md;
+}
+
+.dark .service-card:hover {
+  @apply shadow-xl border-accent/30;
+}
+
+.dark .service-icon {
+  @apply bg-primary/20 text-accent;
+}
+
+.dark .service-title {
+  @apply text-foreground;
+}
+
+.dark .service-description {
+  @apply text-muted-foreground;
 }
 
 .portfolio-item {
