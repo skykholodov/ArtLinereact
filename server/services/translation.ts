@@ -81,37 +81,108 @@ export async function translateContent(
 
   // Получаем переводы для каждого языка
   for (const lang of targetLanguages) {
-    // Копируем исходный объект
-    const translatedObj = { ...contentObj };
-
     // Если это язык исходного контента, то просто копируем без перевода
     if (lang === sourceLang) {
-      result[lang] = translatedObj;
+      result[lang] = { ...contentObj };
       continue;
     }
 
-    // Для каждого поля выполняем перевод
+    // Создаем глубокую копию исходного объекта
+    const translatedObj = JSON.parse(JSON.stringify(contentObj));
+    
+    // Для каждого указанного поля выполняем перевод
     for (const field of fields) {
-      if (typeof contentObj[field] === 'string' && contentObj[field].trim()) {
-        translatedObj[field] = await translateText(contentObj[field], lang, sourceLang);
-      } else if (typeof contentObj[field] === 'object' && contentObj[field] !== null) {
-        // Если значение поля - объект или массив, то преобразуем его в JSON-строку,
-        // переводим, затем преобразуем обратно в объект
-        const jsonString = JSON.stringify(contentObj[field]);
-        const translatedJson = await translateText(jsonString, lang, sourceLang);
-        
-        try {
-          translatedObj[field] = JSON.parse(translatedJson);
-        } catch (error) {
-          console.error(`Ошибка при разборе JSON перевода для поля ${field}:`, error);
-          translatedObj[field] = contentObj[field]; // Возвращаем исходное значение
-        }
+      // Проверяем наличие поля в объекте
+      if (field in contentObj) {
+        translatedObj[field] = await translateField(contentObj[field], lang, sourceLang);
       }
     }
 
     result[lang] = translatedObj;
   }
 
+  return result;
+}
+
+/**
+ * Вспомогательная функция для рекурсивного перевода полей различных типов
+ * 
+ * @param fieldValue Значение поля для перевода
+ * @param targetLang Целевой язык перевода
+ * @param sourceLang Исходный язык контента
+ * @returns Переведенное значение того же типа
+ */
+async function translateField(
+  fieldValue: any, 
+  targetLang: Language, 
+  sourceLang: Language
+): Promise<any> {
+  // Пустые значения не переводим
+  if (fieldValue === null || fieldValue === undefined || fieldValue === '') {
+    return fieldValue;
+  }
+
+  // Перевод строковых значений
+  if (typeof fieldValue === 'string') {
+    return await translateText(fieldValue, targetLang, sourceLang);
+  }
+
+  // Перевод массивов: переводим каждый элемент массива
+  if (Array.isArray(fieldValue)) {
+    const translatedArray = [];
+    
+    for (const item of fieldValue) {
+      if (typeof item === 'object' && item !== null) {
+        // Для объектов в массиве выполняем рекурсивный перевод
+        translatedArray.push(await translateObject(item, targetLang, sourceLang));
+      } else if (typeof item === 'string') {
+        // Для строк выполняем прямой перевод
+        translatedArray.push(await translateText(item, targetLang, sourceLang));
+      } else {
+        // Остальные типы (числа, булевы значения и т.д.) оставляем как есть
+        translatedArray.push(item);
+      }
+    }
+    
+    return translatedArray;
+  }
+
+  // Перевод объектов: рекурсивно переводим все строковые поля
+  if (typeof fieldValue === 'object') {
+    return await translateObject(fieldValue, targetLang, sourceLang);
+  }
+
+  // Для всех остальных типов (числа, булевы значения и т.д.) возвращаем исходное значение
+  return fieldValue;
+}
+
+/**
+ * Переводит все строковые поля в объекте
+ * 
+ * @param obj Объект для перевода
+ * @param targetLang Целевой язык перевода
+ * @param sourceLang Исходный язык контента
+ * @returns Новый объект с переведенными строковыми полями
+ */
+async function translateObject(
+  obj: Record<string, any>,
+  targetLang: Language,
+  sourceLang: Language
+): Promise<Record<string, any>> {
+  const result: Record<string, any> = {};
+  
+  // Обходим все поля объекта
+  for (const [key, value] of Object.entries(obj)) {
+    // Пропускаем служебные поля и идентификаторы
+    if (key === 'id' || key === 'key' || key === 'date' || key === 'createdAt' || key === 'updatedAt') {
+      result[key] = value;
+      continue;
+    }
+    
+    // Рекурсивно переводим каждое поле
+    result[key] = await translateField(value, targetLang, sourceLang);
+  }
+  
   return result;
 }
 
