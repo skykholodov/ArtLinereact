@@ -74,22 +74,45 @@ export default function Header() {
         <Link href="/" className="flex items-center">
           <span className="flex items-center space-x-2">
             <ArtLineLogo />
-            <span className="font-montserrat font-bold text-primary text-xl hidden sm:inline-block">ART-LINE</span>
+            <span className="font-montserrat font-bold text-primary text-lg sm:text-xl hidden xs:inline-block">ART-LINE</span>
           </span>
         </Link>
 
         {/* Mobile Menu Button */}
-        <button
-          className="lg:hidden focus:outline-none"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
-        >
-          {isMobileMenuOpen ? (
-            <X className="h-6 w-6 text-primary" />
-          ) : (
-            <Menu className="h-6 w-6 text-primary" />
+        <div className="flex items-center space-x-2 lg:hidden">
+          {!isMobileMenuOpen && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="p-1 h-8 w-8">
+                  <Globe className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-28">
+                <DropdownMenuItem onClick={() => setLanguage("ru")}>
+                  Русский
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLanguage("kz")}>
+                  Қазақша
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLanguage("en")}>
+                  English
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
-        </button>
+          
+          <button
+            className="focus:outline-none"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+          >
+            {isMobileMenuOpen ? (
+              <X className="h-6 w-6 text-primary" />
+            ) : (
+              <Menu className="h-6 w-6 text-primary" />
+            )}
+          </button>
+        </div>
 
         {/* Desktop Navigation */}
         <nav className="hidden lg:flex space-x-8 items-center">
@@ -180,36 +203,41 @@ export default function Header() {
 
       {/* Mobile Navigation Menu */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden bg-white w-full border-t border-gray-100">
-          <div className="container mx-auto px-4 py-4">
-            <nav className="flex flex-col space-y-4">
-              <button
-                onClick={() => scrollToSection("services")}
-                className="font-montserrat font-medium hover:text-secondary transition-colors py-2"
-              >
-                {translate("nav.services", language)}
-              </button>
-              <button
-                onClick={() => scrollToSection("portfolio")}
-                className="font-montserrat font-medium hover:text-secondary transition-colors py-2"
-              >
-                {translate("nav.portfolio", language)}
-              </button>
-              <button
-                onClick={() => scrollToSection("about")}
-                className="font-montserrat font-medium hover:text-secondary transition-colors py-2"
-              >
-                {translate("nav.about", language)}
-              </button>
-              <button
-                onClick={() => scrollToSection("contacts")}
-                className="font-montserrat font-medium hover:text-secondary transition-colors py-2"
-              >
-                {translate("nav.contacts", language)}
-              </button>
+        <div className="lg:hidden bg-white w-full border-t border-gray-100 shadow-md animate-fadeIn">
+          <div className="container mx-auto px-4 py-3 sm:py-4">
+            <nav className="flex flex-col space-y-3">
+              <div className="flex flex-col space-y-0">
+                {/* Main navigation links */}
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => scrollToSection("services")}
+                    className="font-montserrat font-medium hover:text-secondary transition-colors py-2 text-left"
+                  >
+                    {translate("nav.services", language)}
+                  </button>
+                  <button
+                    onClick={() => scrollToSection("portfolio")}
+                    className="font-montserrat font-medium hover:text-secondary transition-colors py-2 text-left"
+                  >
+                    {translate("nav.portfolio", language)}
+                  </button>
+                  <button
+                    onClick={() => scrollToSection("about")}
+                    className="font-montserrat font-medium hover:text-secondary transition-colors py-2 text-left"
+                  >
+                    {translate("nav.about", language)}
+                  </button>
+                  <button
+                    onClick={() => scrollToSection("contacts")}
+                    className="font-montserrat font-medium hover:text-secondary transition-colors py-2 text-left"
+                  >
+                    {translate("nav.contacts", language)}
+                  </button>
+                </div>
+              </div>
 
               {/* Language Options */}
-              <div className="border-t border-gray-200 pt-4 mt-2">
+              <div className="border-t border-gray-200 pt-3 mt-1">
                 <p className="text-sm text-gray-500 mb-2">Язык:</p>
                 <div className="flex space-x-4">
                   <button
@@ -240,39 +268,44 @@ export default function Header() {
               </div>
 
               {/* Admin/Login button for mobile */}
-              {user ? (
-                <Link href="/admin" className="block w-full">
-                  <Button
-                    variant="outline"
-                    className="w-full flex items-center justify-center space-x-2 border-primary text-primary"
-                  >
-                    <User className="h-4 w-4" />
-                    <span>
-                      {language === "ru" ? "Панель администратора" : 
-                       language === "kz" ? "Әкімші панелі" : 
-                       "Admin Dashboard"}
-                    </span>
-                  </Button>
-                </Link>
-              ) : (
-                <Link href="/auth" className="block w-full">
-                  <Button
-                    variant="outline"
-                    className="w-full flex items-center justify-center space-x-2"
-                  >
-                    <LogIn className="h-4 w-4" />
-                    <span>
-                      {language === "ru" ? "Войти в систему" : 
-                       language === "kz" ? "Жүйеге кіру" : 
-                       "Login to System"}
-                    </span>
-                  </Button>
-                </Link>
-              )}
+              <div className="pt-1">
+                {user ? (
+                  <Link href="/admin" className="block w-full">
+                    <Button
+                      variant="outline"
+                      className="w-full flex items-center justify-center space-x-2 border-primary text-primary"
+                      size="sm"
+                    >
+                      <User className="h-4 w-4" />
+                      <span>
+                        {language === "ru" ? "Панель администратора" : 
+                         language === "kz" ? "Әкімші панелі" : 
+                         "Admin Dashboard"}
+                      </span>
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link href="/auth" className="block w-full">
+                    <Button
+                      variant="outline"
+                      className="w-full flex items-center justify-center space-x-2"
+                      size="sm"
+                    >
+                      <LogIn className="h-4 w-4" />
+                      <span>
+                        {language === "ru" ? "Войти в систему" : 
+                         language === "kz" ? "Жүйеге кіру" : 
+                         "Login"}
+                      </span>
+                    </Button>
+                  </Link>
+                )}
+              </div>
 
               <Button
                 onClick={() => scrollToSection("contacts")}
-                className="bg-secondary hover:bg-secondary/90 text-white w-full mt-4"
+                className="bg-secondary hover:bg-secondary/90 text-white w-full mt-2"
+                size="sm"
               >
                 {translate("nav.order", language)}
               </Button>
