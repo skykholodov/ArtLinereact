@@ -322,6 +322,10 @@ export class MemStorage implements IStorage {
 
 import { DatabaseStorage } from "./database-storage";
 
-// Choose between memory storage and database storage
-// export const storage = new MemStorage();
-export const storage = new DatabaseStorage();
+// Определяем окружение
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+// Выбираем между in-memory и database storage в зависимости от окружения
+export const storage = isDevelopment 
+  ? new MemStorage() 
+  : new DatabaseStorage();
