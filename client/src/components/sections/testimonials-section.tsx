@@ -21,57 +21,61 @@ export default function TestimonialsSection() {
   const [scrollLeft, setScrollLeft] = useState(0);
   const sliderRef = useRef<HTMLDivElement>(null);
   
+  // Демонстрационные отзывы на разных языках
+  const demoTestimonials = [
+    {
+      id: 1,
+      text: language === "ru" ? "Работаем с Art-Line уже третий год — от визиток до брендирования автомобилей. Всегда чётко, быстро и со вкусом. Особенно радует подход к деталям: всё продумано, ничего лишнего. Рекомендуем всем, кто ценит профессионализм!" : 
+             language === "kz" ? "Art-Line-мен үшінші жыл жұмыс істеп келеміз — визиткалардан бастап автомобильдерді брендтеуге дейін. Әрқашан анық, жылдам және талғаммен. Әсіресе егжей-тегжейлі тәсіл қуантады: барлығы ойластырылған, артық ештеңе жоқ. Кәсібилікті бағалайтын барлық адамдарға ұсынамыз!" : 
+             "We've been working with Art-Line for the third year now - from business cards to vehicle branding. Always precise, fast, and tasteful. The approach to details is especially pleasing: everything is thought out, nothing excessive. We recommend to everyone who values professionalism!",
+      author: "Арт Директор",
+      position: language === "ru" ? "корпоративный клиент" : 
+                language === "kz" ? "корпоративтік клиент" : 
+                "corporate client",
+      rating: 5
+    },
+    {
+      id: 2,
+      text: language === "ru" ? "Заказывал разработку дизайна для вывески. Ребята очень креативные, предложили несколько интересных идей. Вывеска получилась просто отличная!" : 
+             language === "kz" ? "Маңдайша үшін дизайн әзірлеуге тапсырыс бердім. Жігіттер өте креативті, бірнеше қызықты идеялар ұсынды. Маңдайша керемет шықты!" : 
+             "I ordered a design development for a signage. The team is very creative, they offered several interesting ideas. The sign turned out great!",
+      author: "Бакытжан",
+      position: language === "ru" ? "Разработка дизайна вывески" : 
+                language === "kz" ? "Маңдайша дизайнын әзірлеу" : 
+                "Signage design development",
+      rating: 5
+    },
+    {
+      id: 3,
+      text: language === "ru" ? "Очень доволен работой агентства. Быстро и профессионально сделали брендирование автомобиля. Рекомендую!" : 
+             language === "kz" ? "Агенттіктің жұмысына өте ризамын. Автокөлікті брендтеуді жылдам және кәсіби түрде жасады. Ұсынамын!" : 
+             "Very satisfied with the agency's work. They branded the car quickly and professionally. I recommend!",
+      author: "Сергей",
+      position: language === "ru" ? "Брендирование автомобиля" : 
+                language === "kz" ? "Автомобильді брендтеу" : 
+                "Vehicle branding",
+      rating: 5
+    },
+    {
+      id: 4,
+      text: language === "ru" ? "Агентство помогло с оформлением мероприятия. Все было сделано оперативно и качественно. Очень благодарна за их профессионализм!" : 
+             language === "kz" ? "Агенттік іс-шараны безендіруге көмектесті. Барлығы жедел және сапалы жасалды. Олардың кәсібилігі үшін өте ризамын!" : 
+             "The agency helped with the event decoration. Everything was done promptly and with quality. Very grateful for their professionalism!",
+      author: "Елена",
+      position: language === "ru" ? "Оформление мероприятия" : 
+                language === "kz" ? "Іс-шараны безендіру" : 
+                "Event decoration",
+      rating: 5
+    }
+  ];
+
   // Fetch testimonials from API
-  const { data: testimonials = [], isLoading } = useQuery<Testimonial[]>({
+  const { data: apiTestimonials = [], isLoading } = useQuery<Testimonial[]>({
     queryKey: ["/api/testimonials", language],
-    // Fallback to demo data if API call fails
-    placeholderData: [
-      {
-        id: 1,
-        text: language === "ru" ? "Работаем с Art-Line уже третий год — от визиток до брендирования автомобилей. Всегда чётко, быстро и со вкусом. Особенно радует подход к деталям: всё продумано, ничего лишнего. Рекомендуем всем, кто ценит профессионализм!" : 
-               language === "kz" ? "Art-Line-мен үшінші жыл жұмыс істеп келеміз — визиткалардан бастап автомобильдерді брендтеуге дейін. Әрқашан анық, жылдам және талғаммен. Әсіресе егжей-тегжейлі тәсіл қуантады: барлығы ойластырылған, артық ештеңе жоқ. Кәсібилікті бағалайтын барлық адамдарға ұсынамыз!" : 
-               "We've been working with Art-Line for the third year now - from business cards to vehicle branding. Always precise, fast, and tasteful. The approach to details is especially pleasing: everything is thought out, nothing excessive. We recommend to everyone who values professionalism!",
-        author: "Арт Директор",
-        position: language === "ru" ? "корпоративный клиент" : 
-                  language === "kz" ? "корпоративтік клиент" : 
-                  "corporate client",
-        rating: 5
-      },
-      {
-        id: 2,
-        text: language === "ru" ? "Заказывал разработку дизайна для вывески. Ребята очень креативные, предложили несколько интересных идей. Вывеска получилась просто отличная!" : 
-               language === "kz" ? "Маңдайша үшін дизайн әзірлеуге тапсырыс бердім. Жігіттер өте креативті, бірнеше қызықты идеялар ұсынды. Маңдайша керемет шықты!" : 
-               "I ordered a design development for a signage. The team is very creative, they offered several interesting ideas. The sign turned out great!",
-        author: "Бакытжан",
-        position: language === "ru" ? "Разработка дизайна вывески" : 
-                  language === "kz" ? "Маңдайша дизайнын әзірлеу" : 
-                  "Signage design development",
-        rating: 5
-      },
-      {
-        id: 3,
-        text: language === "ru" ? "Очень доволен работой агентства. Быстро и профессионально сделали брендирование автомобиля. Рекомендую!" : 
-               language === "kz" ? "Агенттіктің жұмысына өте ризамын. Автокөлікті брендтеуді жылдам және кәсіби түрде жасады. Ұсынамын!" : 
-               "Very satisfied with the agency's work. They branded the car quickly and professionally. I recommend!",
-        author: "Сергей",
-        position: language === "ru" ? "Брендирование автомобиля" : 
-                  language === "kz" ? "Автомобильді брендтеу" : 
-                  "Vehicle branding",
-        rating: 5
-      },
-      {
-        id: 4,
-        text: language === "ru" ? "Агентство помогло с оформлением мероприятия. Все было сделано оперативно и качественно. Очень благодарна за их профессионализм!" : 
-               language === "kz" ? "Агенттік іс-шараны безендіруге көмектесті. Барлығы жедел және сапалы жасалды. Олардың кәсібилігі үшін өте ризамын!" : 
-               "The agency helped with the event decoration. Everything was done promptly and with quality. Very grateful for their professionalism!",
-        author: "Елена",
-        position: language === "ru" ? "Оформление мероприятия" : 
-                  language === "kz" ? "Іс-шараны безендіру" : 
-                  "Event decoration",
-        rating: 5
-      }
-    ]
   });
+
+  // Используем отзывы из API, если они есть и их больше 0, иначе используем демо-отзывы
+  const testimonials = apiTestimonials.length > 0 ? apiTestimonials : demoTestimonials;
 
   // Move to next slide
   const nextSlide = () => {
