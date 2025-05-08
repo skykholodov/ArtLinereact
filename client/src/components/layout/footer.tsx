@@ -6,7 +6,7 @@ import { FaTelegram, FaWhatsapp, FaInstagram } from "react-icons/fa";
 
 // Create an SVG logo component for the footer (white version)
 const ArtLineLogoWhite = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" className="h-16 w-auto">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" className="h-16 w-auto footer-logo">
     <path fill="#FFFFFF" d="M18 36L0 18L18 0L36 18L18 36ZM18 6L18 30L28.9 18L18 6Z"/>
     <path fill="#D3AB40" d="M18 12L18 24L24 18L18 12Z"/>
   </svg>
@@ -152,7 +152,7 @@ export default function Footer() {
                   <a href="tel:+77760063819" className="hover:text-secondary transition-colors">
                     +7 776 006 38 19
                   </a>
-                  <span className="block text-gray-300 text-sm">Александр Оспанов</span>
+                  <span className="block text-gray-300 dark:text-gray-200 text-sm">Александр Оспанов</span>
                 </div>
               </li>
               <li className="flex items-start">
@@ -167,7 +167,7 @@ export default function Footer() {
           </div>
         </div>
         
-        <div className="border-t border-gray-700 mt-12 pt-8">
+        <div className="border-t border-gray-700 dark:border-gray-600 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p>{translate("footer.copyright", language)}, {new Date().getFullYear()}.</p>
             <div className="mt-4 md:mt-0">
