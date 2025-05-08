@@ -23,6 +23,7 @@ const ArtLineLogo = () => (
 export default function Header() {
   const [location] = useLocation();
   const { language, setLanguage } = useLanguage();
+  const { user } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -139,6 +140,35 @@ export default function Header() {
             </DropdownMenuContent>
           </DropdownMenu>
 
+          {/* Admin button */}
+          {user ? (
+            <Link href="/admin">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center space-x-1 border-primary text-primary mr-2"
+              >
+                <User className="h-4 w-4" />
+                <span className="hidden sm:inline">
+                  {language === "ru" ? "Админ" : language === "kz" ? "Әкімші" : "Admin"}
+                </span>
+              </Button>
+            </Link>
+          ) : (
+            <Link href="/auth">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center space-x-1 mr-2"
+              >
+                <LogIn className="h-4 w-4" />
+                <span className="hidden sm:inline">
+                  {language === "ru" ? "Войти" : language === "kz" ? "Кіру" : "Login"}
+                </span>
+              </Button>
+            </Link>
+          )}
+          
           <Button
             onClick={() => scrollToSection("contacts")}
             className="bg-secondary hover:bg-secondary/90 text-white"
@@ -208,6 +238,37 @@ export default function Header() {
                   </button>
                 </div>
               </div>
+
+              {/* Admin/Login button for mobile */}
+              {user ? (
+                <Link href="/admin" className="block w-full">
+                  <Button
+                    variant="outline"
+                    className="w-full flex items-center justify-center space-x-2 border-primary text-primary"
+                  >
+                    <User className="h-4 w-4" />
+                    <span>
+                      {language === "ru" ? "Панель администратора" : 
+                       language === "kz" ? "Әкімші панелі" : 
+                       "Admin Dashboard"}
+                    </span>
+                  </Button>
+                </Link>
+              ) : (
+                <Link href="/auth" className="block w-full">
+                  <Button
+                    variant="outline"
+                    className="w-full flex items-center justify-center space-x-2"
+                  >
+                    <LogIn className="h-4 w-4" />
+                    <span>
+                      {language === "ru" ? "Войти в систему" : 
+                       language === "kz" ? "Жүйеге кіру" : 
+                       "Login to System"}
+                    </span>
+                  </Button>
+                </Link>
+              )}
 
               <Button
                 onClick={() => scrollToSection("contacts")}
