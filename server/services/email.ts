@@ -5,18 +5,8 @@ import { ContactSubmission } from '@shared/schema';
 const FROM_EMAIL = 'noreply@art-line.kz';
 const ADMIN_EMAIL = 'kholodovz@gmail.com';
 
-// Создаем транспорт для отправки почты
-// Используем общедоступный сервис ethereal.email для тестирования
-// В реальном проекте здесь будут реальные учетные данные SMTP
-const transporter = nodemailer.createTransport({
-  host: 'smtp.ethereal.email',
-  port: 587,
-  secure: false, // true для 465, false для других портов
-  auth: {
-    user: process.env.EMAIL_USER || 'ethereal.user@ethereal.email', // сгенерированное имя пользователя
-    pass: process.env.EMAIL_PASS || 'ethereal.password', // сгенерированный пароль
-  },
-});
+// Транспорт для отправки почты (будет инициализирован позже)
+let transporter: nodemailer.Transporter;
 
 /**
  * Форматирует данные заявки для удобного просмотра в email
@@ -34,11 +24,30 @@ function formatSubmissionContent(submission: ContactSubmission): string {
 }
 
 /**
- * Создает тестовые учетные данные SMTP, если они не настроены
+ * Инициализирует транспорт для отправки почты.
+ * Если EMAIL_USER и EMAIL_PASS не настроены, создает тестовый аккаунт Ethereal.
  */
-async function createTestAccount() {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    try {
+async function initializeTransport() {
+  // Если транспорт уже инициализирован, возвращаем true
+  if (transporter) {
+    return true;
+  }
+  
+  try {
+    if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+      // Используем настроенные учетные данные SMTP
+      transporter = nodemailer.createTransport({
+        host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+        port: parseInt(process.env.EMAIL_PORT || '587'),
+        secure: process.env.EMAIL_SECURE === 'true',
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+      
+      console.log('SMTP транспорт настроен с реальными учетными данными');
+    } else {
       // Генерируем тестовую учетную запись Ethereal для разработки
       const testAccount = await nodemailer.createTestAccount();
       
@@ -48,19 +57,23 @@ async function createTestAccount() {
       console.log('- SMTP URL:', `https://ethereal.email/login`);
       console.log('Используйте эти данные для просмотра отправленных писем');
       
-      // Обновляем транспорт с новыми данными
-      transporter.options.auth = {
-        user: testAccount.user,
-        pass: testAccount.pass
-      };
-      
-      return true;
-    } catch (error) {
-      console.error('Ошибка создания тестового аккаунта:', error);
-      return false;
+      // Создаем транспорт с тестовыми данными
+      transporter = nodemailer.createTransport({
+        host: 'smtp.ethereal.email',
+        port: 587,
+        secure: false,
+        auth: {
+          user: testAccount.user,
+          pass: testAccount.pass,
+        },
+      });
     }
+    
+    return true;
+  } catch (error) {
+    console.error('Ошибка инициализации транспорта:', error);
+    return false;
   }
-  return true;
 }
 
 /**
@@ -68,7 +81,11 @@ async function createTestAccount() {
  */
 export async function sendAdminNotification(submission: ContactSubmission): Promise<boolean> {
   try {
-    await createTestAccount();
+    // Инициализируем транспорт перед отправкой
+    if (!(await initializeTransport())) {
+      console.error('Не удалось инициализировать транспорт для отправки email');
+      return false;
+    }
     
     // Отправка email администратору
     const info = await transporter.sendMail({
@@ -79,6 +96,7 @@ export async function sendAdminNotification(submission: ContactSubmission): Prom
     });
     
     console.log(`Email notification sent for submission ID: ${submission.id}`);
+    
     // Показываем URL превью для тестовых сообщений Ethereal
     if (info && typeof info === 'object' && 'messageId' in info) {
       const previewURL = nodemailer.getTestMessageUrl(info);
@@ -104,7 +122,11 @@ export async function sendUserConfirmation(submission: ContactSubmission): Promi
   }
 
   try {
-    await createTestAccount();
+    // Инициализируем транспорт перед отправкой
+    if (!(await initializeTransport())) {
+      console.error('Не удалось инициализировать транспорт для отправки email');
+      return false;
+    }
     
     // Отправка email подтверждения пользователю
     const info = await transporter.sendMail({
@@ -125,7 +147,14 @@ export async function sendUserConfirmation(submission: ContactSubmission): Promi
     });
     
     console.log(`User confirmation sent to ${submission.email}`);
-    console.log('Превью: %s', nodemailer.getTestMessageUrl(info));
+    
+    // Показываем URL превью для тестовых сообщений Ethereal
+    if (info && typeof info === 'object' && 'messageId' in info) {
+      const previewURL = nodemailer.getTestMessageUrl(info);
+      if (previewURL) {
+        console.log('Превью письма:', previewURL);
+      }
+    }
     
     return true;
   } catch (error) {

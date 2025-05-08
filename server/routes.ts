@@ -134,25 +134,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: message || ""
       });
       
-      // Отправка уведомления администратору
-      sendAdminNotification(submission)
-        .then(sent => {
-          console.log(`Admin notification ${sent ? 'sent' : 'failed'} for submission ID: ${submission.id}`);
-        })
-        .catch(err => {
-          console.error('Error sending admin notification:', err);
-        });
-      
-      // Отправка подтверждения пользователю, если указан email
-      if (email) {
-        sendUserConfirmation(submission)
+      // Отправка уведомлений асинхронно, чтобы не задерживать ответ
+      Promise.all([
+        // Уведомление администратору
+        sendAdminNotification(submission)
           .then(sent => {
-            console.log(`User confirmation ${sent ? 'sent' : 'failed'} for submission ID: ${submission.id}`);
+            console.log(`Admin notification ${sent ? 'sent' : 'failed'} for submission ID: ${submission.id}`);
+            return sent;
           })
           .catch(err => {
-            console.error('Error sending user confirmation:', err);
-          });
-      }
+            console.error('Error sending admin notification:', err);
+            return false;
+          }),
+          
+        // Подтверждение пользователю (если указан email)
+        email ? 
+          sendUserConfirmation(submission)
+            .then(sent => {
+              console.log(`User confirmation ${sent ? 'sent' : 'failed'} for submission ID: ${submission.id}`);
+              return sent;
+            })
+            .catch(err => {
+              console.error('Error sending user confirmation:', err);
+              return false;
+            })
+          : Promise.resolve(false)
+      ]).then(([adminSent, userSent]) => {
+        console.log(`Email notifications result: Admin=${adminSent}, User=${userSent}`);
+      });
       
       res.status(201).json(submission);
     } catch (error) {
