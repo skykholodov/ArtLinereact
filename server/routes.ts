@@ -207,6 +207,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Error updating contact submission" });
     }
   });
+  
+  // Portfolio API - получаем элементы портфолио
+  app.get("/api/portfolio", async (req, res) => {
+    try {
+      // Получаем содержимое портфолио из хранилища
+      const portfolioContent = await storage.getContent("portfolio", "items", req.query.language as string || "ru");
+      
+      // Если контент не найден, возвращаем пустой массив
+      if (!portfolioContent) {
+        return res.json([]);
+      }
+      
+      // Если контент найден и он содержит элементы в поле content, возвращаем их
+      try {
+        const portfolioItems = Array.isArray(portfolioContent.content) 
+          ? portfolioContent.content 
+          : JSON.parse(portfolioContent.content as string);
+        
+        return res.json(portfolioItems);
+      } catch (parseError) {
+        console.error("Error parsing portfolio content:", parseError);
+        return res.json([]);
+      }
+    } catch (error) {
+      console.error("Error fetching portfolio items:", error);
+      res.status(500).json({ message: "Error fetching portfolio items" });
+    }
+  });
+  
+  // Testimonials API - получаем отзывы
+  app.get("/api/testimonials", async (req, res) => {
+    try {
+      // Получаем отзывы из хранилища
+      const testimonialContent = await storage.getContent("testimonials", "items", req.query.language as string || "ru");
+      
+      // Если контент не найден, возвращаем пустой массив
+      if (!testimonialContent) {
+        return res.json([]);
+      }
+      
+      // Если контент найден и он содержит элементы в поле content, возвращаем их
+      try {
+        const testimonialItems = Array.isArray(testimonialContent.content) 
+          ? testimonialContent.content 
+          : JSON.parse(testimonialContent.content as string);
+        
+        return res.json(testimonialItems);
+      } catch (parseError) {
+        console.error("Error parsing testimonial content:", parseError);
+        return res.json([]);
+      }
+    } catch (error) {
+      console.error("Error fetching testimonial items:", error);
+      res.status(500).json({ message: "Error fetching testimonial items" });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
