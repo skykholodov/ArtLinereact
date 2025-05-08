@@ -52,7 +52,7 @@ export interface IStorage {
   countContactSubmissions(): Promise<number>;
   
   // Session store
-  sessionStore: session.SessionStore;
+  sessionStore: session.Store;
 }
 
 export class MemStorage implements IStorage {
@@ -62,7 +62,7 @@ export class MemStorage implements IStorage {
   private mediaFiles: Map<number, Media>;
   private contactForms: Map<number, ContactSubmission>;
   
-  sessionStore: session.SessionStore;
+  sessionStore: session.Store;
   
   currentId: {
     user: number;
@@ -323,5 +323,5 @@ export class MemStorage implements IStorage {
 import { DatabaseStorage } from "./database-storage";
 
 // Choose between memory storage and database storage
-export const storage = new MemStorage();
-// export const storage = new DatabaseStorage();
+// export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
