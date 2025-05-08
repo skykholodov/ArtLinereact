@@ -248,15 +248,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json([]);
       }
       
-      // Если контент найден и он содержит элементы в поле content, возвращаем их
+      // Если контент найден, обрабатываем и возвращаем элементы
       try {
-        const testimonialItems = Array.isArray(testimonialContent.content) 
-          ? testimonialContent.content 
-          : JSON.parse(testimonialContent.content as string);
+        let testimonialItems = [];
+        
+        // Проверяем тип содержимого
+        if (Array.isArray(testimonialContent.content)) {
+          // Если это массив, используем его напрямую
+          testimonialItems = testimonialContent.content;
+        } else if (typeof testimonialContent.content === 'object' && testimonialContent.content !== null) {
+          // Если это объект (что вероятно для PostgreSQL jsonb), проверяем наличие свойства items
+          if (testimonialContent.content.items && Array.isArray(testimonialContent.content.items)) {
+            testimonialItems = testimonialContent.content.items;
+          } else {
+            // Если объект, но без items, используем сам объект
+            testimonialItems = [testimonialContent.content];
+          }
+        } else if (typeof testimonialContent.content === 'string') {
+          // Если это строка, пытаемся распарсить как JSON
+          try {
+            const parsed = JSON.parse(testimonialContent.content);
+            if (Array.isArray(parsed)) {
+              testimonialItems = parsed;
+            } else if (parsed.items && Array.isArray(parsed.items)) {
+              testimonialItems = parsed.items;
+            } else {
+              testimonialItems = [parsed];
+            }
+          } catch (e) {
+            console.error("Error parsing testimonial content as JSON string:", e);
+            testimonialItems = [];
+          }
+        }
         
         return res.json(testimonialItems);
       } catch (parseError) {
-        console.error("Error parsing testimonial content:", parseError);
+        console.error("Error processing testimonial content:", parseError);
         return res.json([]);
       }
     } catch (error) {
