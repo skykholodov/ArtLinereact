@@ -9,27 +9,25 @@ export function ProtectedRoute({
   path: string;
   component: () => React.JSX.Element;
 }) {
-  return (
-    <Route path={path}>
-      <ProtectedRouteContent component={Component} />
-    </Route>
-  );
-}
-
-function ProtectedRouteContent({ component: Component }: { component: () => React.JSX.Element }) {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
+      <Route path={path}>
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </Route>
     );
   }
 
   if (!user) {
-    return <Redirect to="/auth" />;
+    return (
+      <Route path={path}>
+        <Redirect to="/auth" />
+      </Route>
+    );
   }
 
-  return <Component />;
+  return <Route path={path} component={Component} />;
 }
