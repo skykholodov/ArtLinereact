@@ -464,7 +464,5 @@ import { DatabaseStorage } from "./database-storage";
 // Определяем окружение
 const isDevelopment = process.env.NODE_ENV === 'development';
 
-// Временно используем MemStorage для отладки
-export const storage = isDevelopment 
-  ? new MemStorage() 
-  : new DatabaseStorage();
+// Используем DatabaseStorage для работы с PostgreSQL базой данных
+export const storage = new DatabaseStorage();
