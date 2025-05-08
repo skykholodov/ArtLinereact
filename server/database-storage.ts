@@ -10,7 +10,7 @@ import { db, pool, getResultSetHeader } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
 import session from "express-session";
 import connectMySQL from "connect-mysql";
-import { Json } from "drizzle-orm/mysql-core";
+import memorystore from "memorystore";
 
 const MySQLStore = connectMySQL(session);
 
@@ -18,15 +18,10 @@ export class DatabaseStorage implements IStorage {
   sessionStore: session.Store;
 
   constructor() {
-    // Создаем конфигурацию для connect-mysql
-    this.sessionStore = new MySQLStore({
-      config: {
-        user: process.env.PGUSER,
-        password: process.env.PGPASSWORD,
-        host: process.env.PGHOST,
-        port: Number(process.env.PGPORT),
-        database: process.env.PGDATABASE
-      }
+    // Создаем конфигурацию для хранения сессий
+    const MemoryStore = memorystore(session);
+    this.sessionStore = new MemoryStore({
+      checkPeriod: 86400000 // prune expired entries every 24h
     });
     
     // Create default admin user if none exists
@@ -93,7 +88,7 @@ export class DatabaseStorage implements IStorage {
       // Create revision of the existing content before updating
       await this.createContentRevision({
         contentId: existingContent.id,
-        content: existingContent.content as Json,
+        content: existingContent.content,
         createdBy: insertContent.updatedBy
       });
 
@@ -327,5 +322,57 @@ export class DatabaseStorage implements IStorage {
       .from(contactSubmissions);
     
     return Number(result[0].count);
+  }
+
+  // Инициализация демонстрационного контента
+  async initDemoContent(userId: number): Promise<void> {
+    try {
+      console.log("Initializing demo content for database...");
+
+      // Проверяем, есть ли уже контент
+      const contentCount = await this.countAllContent();
+      if (contentCount > 0) {
+        console.log("Content already exists, skipping demo content initialization");
+        return;
+      }
+
+      // Создаем отзывы для русского языка
+      await this.createContent({
+        sectionType: "testimonials",
+        sectionKey: "items",
+        language: "ru",
+        content: {
+          items: [
+            {
+              id: 1,
+              text: "Работаем с Art-Line уже третий год — от визиток до брендирования автомобилей. Всегда чётко, быстро и со вкусом. Особенно радует подход к деталям: всё продумано, ничего лишнего. Рекомендуем всем, кто ценит профессионализм!",
+              author: "Арт Директор",
+              position: "корпоративный клиент",
+              rating: 5
+            },
+            {
+              id: 2,
+              text: "Заказывали комплексное оформление офиса. От проекта до монтажа — все на высшем уровне. Команда Art-Line проявила креативность и понимание нашего бренда.",
+              author: "Анна",
+              position: "руководитель отдела маркетинга",
+              rating: 5
+            },
+            {
+              id: 3,
+              text: "Очень доволен работой агентства. Быстро и профессионально сделали брендирование автомобиля. Рекомендую!",
+              author: "Сергей",
+              position: "предприниматель",
+              rating: 5
+            },
+          ]
+        },
+        createdBy: userId,
+        updatedBy: userId
+      });
+
+      console.log("Demo content initialized successfully");
+    } catch (error) {
+      console.error("Error initializing demo content:", error);
+    }
   }
 }

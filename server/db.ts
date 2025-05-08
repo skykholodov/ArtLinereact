@@ -2,8 +2,11 @@ import { createPool } from 'mysql2/promise';
 import { drizzle } from 'drizzle-orm/mysql2';
 import * as schema from "@shared/schema";
 
-// В режиме разработки используем MemStorage вместо подключения к базе данных
-const isDevelopment = process.env.NODE_ENV === 'development';
+if (!process.env.DATABASE_URL) {
+  throw new Error(
+    "DATABASE_URL must be set. Did you forget to provision a database?",
+  );
+}
 
 // Интерфейс для результата MySQL запроса
 interface ResultSetHeader {
@@ -11,49 +14,35 @@ interface ResultSetHeader {
   affectedRows: number;
 }
 
-// Функция для эмуляции результатов запросов MySQL
+// Функция для получения результата запроса
 export function getResultSetHeader(result: any): ResultSetHeader {
-  // Для MySQL результат уже должен содержать эти свойства
   return {
     insertId: Number(result?.insertId || 0),
-    affectedRows: Number(result?.affectedRows || isDevelopment ? 1 : 0) // В режиме разработки всегда успех
+    affectedRows: Number(result?.affectedRows || 1)
   };
 }
 
-let pool: any;
-let db: any;
+// Создаем пул соединений для MySQL/MariaDB
+// Используем параметры соединения из переменных окружения
+const connectionConfig = {
+  host: process.env.PGHOST,
+  user: process.env.PGUSER,
+  password: process.env.PGPASSWORD,
+  database: process.env.PGDATABASE,
+  port: Number(process.env.PGPORT),
+  // Увеличиваем таймауты для лучшей стабильности
+  connectTimeout: 30000, // 30 секунд на соединение
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
+};
 
-if (isDevelopment) {
-  console.log('Running in development mode with in-memory storage');
-  // Создаем заглушки для пула соединений и db
-  pool = {} as any;
-  db = {} as any;
-} else {
-  // Режим production с настоящей базой данных
-  if (!process.env.PGUSER || !process.env.PGPASSWORD || !process.env.PGHOST || !process.env.PGPORT || !process.env.PGDATABASE) {
-    throw new Error(
-      "Database environment variables must be set. Did you forget to provision a database?",
-    );
-  }
+console.log('Connecting to database with config:', {
+  host: connectionConfig.host,
+  user: connectionConfig.user,
+  database: connectionConfig.database,
+  port: connectionConfig.port
+});
 
-  // Создаем конфигурацию подключения на основе переменных окружения
-  pool = createPool({
-    host: process.env.PGHOST,
-    user: process.env.PGUSER,
-    password: process.env.PGPASSWORD,
-    database: process.env.PGDATABASE,
-    port: Number(process.env.PGPORT),
-    // Увеличиваем таймауты для лучшей стабильности
-    connectTimeout: 30000, // 30 секунд на соединение
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0,
-    // SSL отключим для локальной разработки
-    ssl: process.env.NODE_ENV === 'production' ? {} : undefined
-  });
-
-  // Инициализируем Drizzle ORM
-  db = drizzle(pool, { schema, mode: 'default' });
-}
-
-export { pool, db };
+export const pool = createPool(connectionConfig);
+export const db = drizzle(pool, { schema, mode: 'default' });
