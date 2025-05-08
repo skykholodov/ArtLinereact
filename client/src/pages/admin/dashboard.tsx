@@ -57,18 +57,18 @@ export default function AdminDashboard() {
   }, [language]);
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex flex-col lg:flex-row h-screen overflow-hidden">
       <Sidebar />
       
       <div className="flex-1 overflow-auto">
-        <div className="p-8">
-          <div className="flex items-center justify-between mb-8">
-            <h1 className="text-3xl font-bold">
+        <div className="p-4 md:p-6 lg:p-8">
+          <div className="flex flex-wrap items-center justify-between mb-6 md:mb-8">
+            <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-0">
               {translate("admin.dashboard", language)}
             </h1>
           </div>
           
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:gap-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
@@ -170,15 +170,15 @@ export default function AdminDashboard() {
             </Card>
           </div>
           
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 mt-8">
-            <Card>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 mt-6 lg:mt-8">
+            <Card className="overflow-hidden">
               <CardHeader>
-                <CardTitle>
+                <CardTitle className="text-base md:text-lg">
                   {language === "ru" ? "Языковой охват" : 
                    language === "kz" ? "Тілдік қамту" : 
                    "Language Coverage"}
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-xs md:text-sm">
                   {language === "ru" ? "Контент по языкам" : 
                    language === "kz" ? "Тілдер бойынша мазмұн" : 
                    "Content by language"}
@@ -187,21 +187,21 @@ export default function AdminDashboard() {
               <CardContent>
                 <Tabs defaultValue="ru">
                   <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="ru">Русский</TabsTrigger>
-                    <TabsTrigger value="kz">Қазақша</TabsTrigger>
-                    <TabsTrigger value="en">English</TabsTrigger>
+                    <TabsTrigger value="ru" className="text-xs sm:text-sm">Русский</TabsTrigger>
+                    <TabsTrigger value="kz" className="text-xs sm:text-sm">Қазақша</TabsTrigger>
+                    <TabsTrigger value="en" className="text-xs sm:text-sm">English</TabsTrigger>
                   </TabsList>
                   <TabsContent value="ru" className="space-y-4 mt-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <Globe className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">
+                        <span className="text-xs sm:text-sm font-medium">
                           {language === "ru" ? "Секции на русском" : 
                            language === "kz" ? "Орыс тіліндегі бөлімдер" : 
                            "Russian sections"}
                         </span>
                       </div>
-                      <span className="text-sm font-bold">
+                      <span className="text-xs sm:text-sm font-bold">
                         {isLoading ? "..." : stats?.languages?.ru || 0}
                       </span>
                     </div>
@@ -216,13 +216,13 @@ export default function AdminDashboard() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <Globe className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">
+                        <span className="text-xs sm:text-sm font-medium">
                           {language === "ru" ? "Секции на казахском" : 
                            language === "kz" ? "Қазақ тіліндегі бөлімдер" : 
                            "Kazakh sections"}
                         </span>
                       </div>
-                      <span className="text-sm font-bold">
+                      <span className="text-xs sm:text-sm font-bold">
                         {isLoading ? "..." : stats?.languages?.kz || 0}
                       </span>
                     </div>
@@ -237,13 +237,13 @@ export default function AdminDashboard() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <Globe className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">
+                        <span className="text-xs sm:text-sm font-medium">
                           {language === "ru" ? "Секции на английском" : 
                            language === "kz" ? "Ағылшын тіліндегі бөлімдер" : 
                            "English sections"}
                         </span>
                       </div>
-                      <span className="text-sm font-bold">
+                      <span className="text-xs sm:text-sm font-bold">
                         {isLoading ? "..." : stats?.languages?.en || 0}
                       </span>
                     </div>
@@ -258,32 +258,32 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
             
-            <Card>
+            <Card className="overflow-hidden">
               <CardHeader>
-                <CardTitle>
+                <CardTitle className="text-base md:text-lg">
                   {language === "ru" ? "Разделы сайта" : 
                    language === "kz" ? "Сайт бөлімдері" : 
                    "Website Sections"}
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-xs md:text-sm">
                   {language === "ru" ? "Секции с контентом" : 
                    language === "kz" ? "Мазмұны бар бөлімдер" : 
                    "Sections with content"}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 gap-8">
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-1 gap-5 sm:gap-6">
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <FileText className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">
+                        <span className="text-xs sm:text-sm font-medium">
                           {language === "ru" ? "Услуги" : 
                            language === "kz" ? "Қызметтер" : 
                            "Services"}
                         </span>
                       </div>
-                      <span className="text-sm font-bold">
+                      <span className="text-xs sm:text-sm font-bold">
                         {isLoading ? "..." : stats?.sections?.services || 0}
                       </span>
                     </div>
@@ -299,13 +299,13 @@ export default function AdminDashboard() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <ImageIcon className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">
+                        <span className="text-xs sm:text-sm font-medium">
                           {language === "ru" ? "Портфолио" : 
                            language === "kz" ? "Портфолио" : 
                            "Portfolio"}
                         </span>
                       </div>
-                      <span className="text-sm font-bold">
+                      <span className="text-xs sm:text-sm font-bold">
                         {isLoading ? "..." : stats?.sections?.portfolio || 0}
                       </span>
                     </div>
@@ -321,13 +321,13 @@ export default function AdminDashboard() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">
+                        <span className="text-xs sm:text-sm font-medium">
                           {language === "ru" ? "О нас" : 
                            language === "kz" ? "Біз туралы" : 
                            "About Us"}
                         </span>
                       </div>
-                      <span className="text-sm font-bold">
+                      <span className="text-xs sm:text-sm font-bold">
                         {isLoading ? "..." : stats?.sections?.about || 0}
                       </span>
                     </div>
@@ -343,13 +343,13 @@ export default function AdminDashboard() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <Users className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">
+                        <span className="text-xs sm:text-sm font-medium">
                           {language === "ru" ? "Отзывы" : 
                            language === "kz" ? "Пікірлер" : 
                            "Testimonials"}
                         </span>
                       </div>
-                      <span className="text-sm font-bold">
+                      <span className="text-xs sm:text-sm font-bold">
                         {isLoading ? "..." : stats?.sections?.testimonials || 0}
                       </span>
                     </div>
