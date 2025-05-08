@@ -99,47 +99,47 @@ export default function ContactSection() {
   };
 
   return (
-    <section id="contacts" className="py-20 bg-primary text-white">
-      <div className="container mx-auto px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+    <section id="contacts" className="py-12 sm:py-16 md:py-20 bg-primary text-white">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           <div>
-            <h2 className="text-3xl md:text-4xl mb-6">{translate("contact.title", language)}</h2>
-            <p className="text-lg mb-8">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl mb-4 sm:mb-6 font-bold">{translate("contact.title", language)}</h2>
+            <p className="text-base sm:text-lg mb-6 sm:mb-8">
               {translate("contact.description", language)}
             </p>
             
-            <div className="space-y-6 mb-10">
+            <div className="space-y-5 sm:space-y-6 mb-8 sm:mb-10">
               <div className="flex items-start">
                 <div className="flex-shrink-0 mt-1">
-                  <div className="w-10 h-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
-                    <Phone className="h-5 w-5 text-white" />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
+                    <Phone className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                   </div>
                 </div>
-                <div className="ml-4">
-                  <h4 className="font-montserrat font-semibold text-lg mb-1">{translate("contact.phone", language)}</h4>
+                <div className="ml-3 sm:ml-4">
+                  <h4 className="font-montserrat font-semibold text-base sm:text-lg mb-1">{translate("contact.phone", language)}</h4>
                   <p>
                     <a href="tel:+77760063819" className="hover:text-secondary transition-colors">
                       +7 776 006 38 19
                     </a>
-                    <span className="block text-gray-300 text-sm">Александр Оспанов</span>
+                    <span className="block text-gray-300 text-xs sm:text-sm">Александр Оспанов</span>
                   </p>
                   <p className="mt-2">
                     <a href="tel:+77272277544" className="hover:text-secondary transition-colors">
                       +7 (727) 227-75-44
                     </a>
-                    <span className="block text-gray-300 text-sm">{translate("contact.office", language)}</span>
+                    <span className="block text-gray-300 text-xs sm:text-sm">{translate("contact.office", language)}</span>
                   </p>
                 </div>
               </div>
               
               <div className="flex items-start">
                 <div className="flex-shrink-0 mt-1">
-                  <div className="w-10 h-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
-                    <Mail className="h-5 w-5 text-white" />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
+                    <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                   </div>
                 </div>
-                <div className="ml-4">
-                  <h4 className="font-montserrat font-semibold text-lg mb-1">{translate("contact.email", language)}</h4>
+                <div className="ml-3 sm:ml-4">
+                  <h4 className="font-montserrat font-semibold text-base sm:text-lg mb-1">{translate("contact.email", language)}</h4>
                   <p>
                     <a href="mailto:info@art-line.kz" className="hover:text-secondary transition-colors">
                       info@art-line.kz
@@ -155,12 +155,12 @@ export default function ContactSection() {
               
               <div className="flex items-start">
                 <div className="flex-shrink-0 mt-1">
-                  <div className="w-10 h-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
-                    <MapPin className="h-5 w-5 text-white" />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
+                    <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                   </div>
                 </div>
-                <div className="ml-4">
-                  <h4 className="font-montserrat font-semibold text-lg mb-1">{translate("contact.address", language)}</h4>
+                <div className="ml-3 sm:ml-4">
+                  <h4 className="font-montserrat font-semibold text-base sm:text-lg mb-1">{translate("contact.address", language)}</h4>
                   <p>
                     ул. Торетай 43, Алматы, Казахстан
                   </p>
@@ -168,38 +168,38 @@ export default function ContactSection() {
               </div>
             </div>
             
-            <div className="flex space-x-4">
+            <div className="flex space-x-3 sm:space-x-4">
               <a 
                 href="https://t.me/AlexanderOspanov" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-12 h-12 rounded-full bg-white bg-opacity-10 flex items-center justify-center hover:bg-secondary transition-colors"
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white bg-opacity-10 flex items-center justify-center hover:bg-secondary transition-colors"
                 aria-label="Telegram"
               >
-                <FaTelegram className="text-lg" />
+                <FaTelegram className="text-base sm:text-lg" />
               </a>
               <a 
                 href="https://wa.me/77760063819" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-12 h-12 rounded-full bg-white bg-opacity-10 flex items-center justify-center hover:bg-secondary transition-colors"
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white bg-opacity-10 flex items-center justify-center hover:bg-secondary transition-colors"
                 aria-label="WhatsApp"
               >
-                <FaWhatsapp className="text-lg" />
+                <FaWhatsapp className="text-base sm:text-lg" />
               </a>
               <a 
                 href="https://instagram.com/izgotovlenie_reklamy" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-12 h-12 rounded-full bg-white bg-opacity-10 flex items-center justify-center hover:bg-secondary transition-colors"
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white bg-opacity-10 flex items-center justify-center hover:bg-secondary transition-colors"
                 aria-label="Instagram"
               >
-                <FaInstagram className="text-lg" />
+                <FaInstagram className="text-base sm:text-lg" />
               </a>
             </div>
           </div>
           
-          <div className="bg-white text-foreground rounded-lg shadow-lg p-8">
+          <div className="bg-white text-foreground rounded-lg shadow-lg p-5 sm:p-6 md:p-8">
             <h3 className="font-montserrat font-semibold text-2xl mb-6">
               {translate("contact.form.title", language)}
             </h3>

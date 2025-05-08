@@ -140,11 +140,11 @@ export default function TestimonialsSection() {
   }, [currentSlide]);
 
   return (
-    <section id="testimonials" className="py-20 bg-background">
-      <div className="container mx-auto px-6">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl mb-4">{translate("testimonials.title", language)}</h2>
-          <p className="max-w-2xl mx-auto text-lg">
+    <section id="testimonials" className="py-12 sm:py-16 md:py-20 bg-background">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="text-center mb-10 sm:mb-12 md:mb-16">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl mb-3 md:mb-4 font-bold">{translate("testimonials.title", language)}</h2>
+          <p className="max-w-2xl mx-auto text-base sm:text-lg text-gray-700">
             {translate("testimonials.description", language)}
           </p>
         </div>
@@ -153,7 +153,7 @@ export default function TestimonialsSection() {
           <div className="overflow-hidden">
             <div 
               ref={sliderRef}
-              className="flex transition-transform duration-500 overflow-x-auto scrollbar-hide snap-x snap-mandatory"
+              className="flex transition-transform duration-500 overflow-x-auto hide-scrollbar snap-x snap-mandatory touch-pan-x"
               style={{ scrollBehavior: "smooth" }}
               onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
@@ -161,25 +161,25 @@ export default function TestimonialsSection() {
               onMouseLeave={handleMouseUp}
             >
               {isLoading ? (
-                // Loading skeleton
+                // Loading skeleton - responsive for different screen sizes
                 Array(4).fill(0).map((_, index) => (
                   <div 
                     key={index} 
-                    className="w-full lg:w-1/2 flex-shrink-0 px-4 snap-center"
+                    className="w-full md:w-4/5 lg:w-1/2 flex-shrink-0 px-2 sm:px-3 md:px-4 snap-center"
                   >
-                    <div className="bg-white p-8 rounded-lg shadow-md animate-pulse">
-                      <div className="flex items-center mb-6">
-                        <div className="bg-gray-300 h-5 w-24 rounded"></div>
+                    <div className="bg-white p-4 sm:p-6 md:p-8 rounded-lg shadow-md animate-pulse">
+                      <div className="flex items-center mb-4 sm:mb-6">
+                        <div className="bg-gray-300 h-4 sm:h-5 w-20 sm:w-24 rounded"></div>
                       </div>
-                      <div className="space-y-3">
-                        <div className="bg-gray-300 h-4 w-full rounded"></div>
-                        <div className="bg-gray-300 h-4 w-full rounded"></div>
-                        <div className="bg-gray-300 h-4 w-3/4 rounded"></div>
+                      <div className="space-y-2 sm:space-y-3">
+                        <div className="bg-gray-300 h-3 sm:h-4 w-full rounded"></div>
+                        <div className="bg-gray-300 h-3 sm:h-4 w-full rounded"></div>
+                        <div className="bg-gray-300 h-3 sm:h-4 w-3/4 rounded"></div>
                       </div>
-                      <div className="mt-6 flex items-center">
-                        <div className="ml-4">
-                          <div className="bg-gray-300 h-5 w-32 rounded mb-1"></div>
-                          <div className="bg-gray-300 h-4 w-24 rounded"></div>
+                      <div className="mt-4 sm:mt-6 flex items-center">
+                        <div className="ml-3 sm:ml-4">
+                          <div className="bg-gray-300 h-4 sm:h-5 w-24 sm:w-32 rounded mb-1"></div>
+                          <div className="bg-gray-300 h-3 sm:h-4 w-20 sm:w-24 rounded"></div>
                         </div>
                       </div>
                     </div>
@@ -189,28 +189,28 @@ export default function TestimonialsSection() {
                 testimonials.map((testimonial, index) => (
                   <div 
                     key={testimonial.id} 
-                    className="w-full lg:w-1/2 flex-shrink-0 px-4 snap-center"
+                    className="w-full md:w-4/5 lg:w-1/2 flex-shrink-0 px-2 sm:px-3 md:px-4 snap-center"
                   >
-                    <div className="bg-white p-8 rounded-lg shadow-md h-full">
-                      <div className="flex items-center mb-6">
+                    <div className="bg-white p-4 sm:p-6 md:p-8 rounded-lg shadow-md h-full">
+                      <div className="flex items-center mb-4 sm:mb-6">
                         <div className="text-yellow-400 flex">
                           {Array(5).fill(0).map((_, i) => (
                             <Star
                               key={i}
-                              className={`h-5 w-5 ${i < testimonial.rating ? 'fill-yellow-400' : 'text-gray-300'}`}
+                              className={`h-4 w-4 sm:h-5 sm:w-5 ${i < testimonial.rating ? 'fill-yellow-400' : 'text-gray-300'}`}
                             />
                           ))}
                         </div>
                       </div>
-                      <blockquote className="text-lg italic mb-6">
+                      <blockquote className="text-sm sm:text-base md:text-lg italic mb-4 sm:mb-6 line-clamp-6 sm:line-clamp-none">
                         "{testimonial.text}"
                       </blockquote>
                       <div className="flex items-center">
                         <div>
-                          <cite className="font-montserrat font-semibold not-italic block">
+                          <cite className="font-montserrat font-semibold not-italic block text-sm sm:text-base">
                             {testimonial.author}
                           </cite>
-                          <span className="text-gray-500 text-sm">{testimonial.position}</span>
+                          <span className="text-gray-500 text-xs sm:text-sm">{testimonial.position}</span>
                         </div>
                       </div>
                     </div>
@@ -220,35 +220,37 @@ export default function TestimonialsSection() {
             </div>
           </div>
           
+          {/* Navigation buttons - hidden on small screens, visible on medium and larger */}
           <Button
             onClick={prevSlide}
             variant="outline"
             size="icon"
-            className="absolute top-1/2 -left-4 transform -translate-y-1/2 w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center z-10"
+            className="hidden md:flex absolute top-1/2 -left-2 sm:-left-3 md:-left-4 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white shadow-md items-center justify-center z-10"
             aria-label="Previous testimonial"
           >
-            <ChevronLeft className="h-6 w-6 text-primary" />
+            <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-primary" />
           </Button>
           
           <Button
             onClick={nextSlide}
             variant="outline"
             size="icon"
-            className="absolute top-1/2 -right-4 transform -translate-y-1/2 w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center z-10"
+            className="hidden md:flex absolute top-1/2 -right-2 sm:-right-3 md:-right-4 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white shadow-md items-center justify-center z-10"
             aria-label="Next testimonial"
           >
-            <ChevronRight className="h-6 w-6 text-primary" />
+            <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-primary" />
           </Button>
           
-          <div className="testimonial-dots flex justify-center mt-8 space-x-2">
+          {/* Indicator dots */}
+          <div className="testimonial-dots flex justify-center mt-6 sm:mt-8 space-x-1.5 sm:space-x-2">
             {testimonials.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setSlide(index)}
-                className={`w-3 h-3 rounded-full transition-all ${
+                className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all ${
                   currentSlide === index 
                     ? "bg-primary opacity-100" 
-                    : "bg-gray-300 opacity-50"
+                    : "bg-gray-300 opacity-50 hover:opacity-75"
                 }`}
                 aria-label={`Go to slide ${index + 1}`}
               />
