@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 0 0% 97%;
+  --foreground: 222 14% 20%;
+  --muted: 210 5% 96%;
+  --muted-foreground: 215 5% 45%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 14% 20%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 14% 20%;
+  --border: 214 5% 90%;
+  --input: 214 5% 90%;
+  --primary: 210 40% 25%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 5 78% 57%;
+  --secondary-foreground: 0 0% 100%;
+  --accent: 206 81% 53%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --ring: 215 20% 65%;
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: 222 14% 10%;
+  --foreground: 0 0% 98%;
+  --muted: 217 5% 15%;
+  --muted-foreground: 215 5% 65%;
+  --popover: 222 14% 10%;
+  --popover-foreground: 0 0% 98%;
+  --card: 222 14% 10%;
+  --card-foreground: 0 0% 98%;
+  --border: 217 5% 15%;
+  --input: 217 5% 15%;
+  --primary: 210 40% 25%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 5 78% 57%;
+  --secondary-foreground: 0 0% 98%;
+  --accent: 206 81% 53%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62% 30%;
+  --destructive-foreground: 0 0% 98%;
+  --ring: 215 5% 25%;
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-opensans antialiased bg-background text-foreground;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-montserrat font-bold;
+  }
+
+  button, a {
+    @apply transition-all duration-300;
+  }
+}
+
+@layer utilities {
+  .font-montserrat {
+    font-family: 'Montserrat', sans-serif;
+  }
+  
+  .font-opensans {
+    font-family: 'Open Sans', sans-serif;
+  }
+}
+
+/* Additional custom classes */
+.hero-bg {
+  background-image: url('https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080&q=80');
+  background-size: cover;
+  background-position: center;
+}
+
+.portfolio-item {
+  @apply transition-transform duration-300;
+}
+
+.portfolio-item:hover {
+  @apply transform scale-105;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-in-out;
+}

@@ -1,0 +1,223 @@
+import { useState, useEffect } from "react";
+import { Link, useLocation } from "wouter";
+import { useLanguage } from "@/hooks/use-language";
+import { translate } from "@/lib/i18n";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Menu, X, ChevronDown, Globe } from "lucide-react";
+
+// Create an SVG logo component
+const ArtLineLogo = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" className="h-10 w-auto">
+    <path fill="#D3AB40" d="M18 36L0 18L18 0L36 18L18 36ZM18 6L18 30L28.9 18L18 6Z"/>
+    <path fill="#2C3E50" d="M18 12L18 24L24 18L18 12Z"/>
+  </svg>
+);
+
+export default function Header() {
+  const [location] = useLocation();
+  const { language, setLanguage } = useLanguage();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Handle scroll to change header styling
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 30);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Smooth scroll to section when clicking on nav links
+  const scrollToSection = (sectionId: string) => {
+    setIsMobileMenuOpen(false);
+    if (location !== "/") {
+      // If not on home page, navigate to home first
+      window.location.href = `/#${sectionId}`;
+      return;
+    }
+    
+    const section = document.getElementById(sectionId);
+    if (section) {
+      const headerHeight = document.querySelector("header")?.offsetHeight || 0;
+      const top = section.offsetTop - headerHeight;
+      window.scrollTo({
+        top,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  // Language name mapping
+  const languageNames = {
+    ru: "RU",
+    kz: "KZ",
+    en: "EN",
+  };
+
+  return (
+    <header
+      className={`fixed w-full bg-white z-50 transition-all duration-300 ${
+        isScrolled ? "shadow-md py-2" : "py-4"
+      }`}
+    >
+      <div className="container mx-auto px-4 flex justify-between items-center">
+        <Link href="/" className="flex items-center">
+          <span className="flex items-center space-x-2">
+            <ArtLineLogo />
+            <span className="font-montserrat font-bold text-primary text-xl hidden sm:inline-block">ART-LINE</span>
+          </span>
+        </Link>
+
+        {/* Mobile Menu Button */}
+        <button
+          className="lg:hidden focus:outline-none"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+        >
+          {isMobileMenuOpen ? (
+            <X className="h-6 w-6 text-primary" />
+          ) : (
+            <Menu className="h-6 w-6 text-primary" />
+          )}
+        </button>
+
+        {/* Desktop Navigation */}
+        <nav className="hidden lg:flex space-x-8 items-center">
+          <button
+            onClick={() => scrollToSection("services")}
+            className="font-montserrat font-medium hover:text-secondary transition-colors"
+          >
+            {translate("nav.services", language)}
+          </button>
+          <button
+            onClick={() => scrollToSection("portfolio")}
+            className="font-montserrat font-medium hover:text-secondary transition-colors"
+          >
+            {translate("nav.portfolio", language)}
+          </button>
+          <button
+            onClick={() => scrollToSection("about")}
+            className="font-montserrat font-medium hover:text-secondary transition-colors"
+          >
+            {translate("nav.about", language)}
+          </button>
+          <button
+            onClick={() => scrollToSection("contacts")}
+            className="font-montserrat font-medium hover:text-secondary transition-colors"
+          >
+            {translate("nav.contacts", language)}
+          </button>
+
+          {/* Language Selector */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="flex items-center space-x-1">
+                <Globe className="h-4 w-4" />
+                <span>{languageNames[language]}</span>
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setLanguage("ru")}>
+                Русский
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setLanguage("kz")}>
+                Қазақша
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setLanguage("en")}>
+                English
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <Button
+            onClick={() => scrollToSection("contacts")}
+            className="bg-secondary hover:bg-secondary/90 text-white"
+          >
+            {translate("nav.order", language)}
+          </Button>
+        </nav>
+      </div>
+
+      {/* Mobile Navigation Menu */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden bg-white w-full border-t border-gray-100">
+          <div className="container mx-auto px-4 py-4">
+            <nav className="flex flex-col space-y-4">
+              <button
+                onClick={() => scrollToSection("services")}
+                className="font-montserrat font-medium hover:text-secondary transition-colors py-2"
+              >
+                {translate("nav.services", language)}
+              </button>
+              <button
+                onClick={() => scrollToSection("portfolio")}
+                className="font-montserrat font-medium hover:text-secondary transition-colors py-2"
+              >
+                {translate("nav.portfolio", language)}
+              </button>
+              <button
+                onClick={() => scrollToSection("about")}
+                className="font-montserrat font-medium hover:text-secondary transition-colors py-2"
+              >
+                {translate("nav.about", language)}
+              </button>
+              <button
+                onClick={() => scrollToSection("contacts")}
+                className="font-montserrat font-medium hover:text-secondary transition-colors py-2"
+              >
+                {translate("nav.contacts", language)}
+              </button>
+
+              {/* Language Options */}
+              <div className="border-t border-gray-200 pt-4 mt-2">
+                <p className="text-sm text-gray-500 mb-2">Язык:</p>
+                <div className="flex space-x-4">
+                  <button
+                    onClick={() => setLanguage("ru")}
+                    className={`font-medium ${
+                      language === "ru" ? "text-secondary" : "hover:text-secondary"
+                    }`}
+                  >
+                    RU
+                  </button>
+                  <button
+                    onClick={() => setLanguage("kz")}
+                    className={`font-medium ${
+                      language === "kz" ? "text-secondary" : "hover:text-secondary"
+                    }`}
+                  >
+                    KZ
+                  </button>
+                  <button
+                    onClick={() => setLanguage("en")}
+                    className={`font-medium ${
+                      language === "en" ? "text-secondary" : "hover:text-secondary"
+                    }`}
+                  >
+                    EN
+                  </button>
+                </div>
+              </div>
+
+              <Button
+                onClick={() => scrollToSection("contacts")}
+                className="bg-secondary hover:bg-secondary/90 text-white w-full mt-4"
+              >
+                {translate("nav.order", language)}
+              </Button>
+            </nav>
+          </div>
+        </div>
+      )}
+    </header>
+  );
+}
