@@ -464,5 +464,5 @@ import { DatabaseStorage } from "./database-storage";
 // Определяем окружение
 const isDevelopment = process.env.NODE_ENV === 'development';
 
-// Используем DatabaseStorage для работы с PostgreSQL базой данных
+// Используем DatabaseStorage для работы с MariaDB/MySQL базой данных
 export const storage = new DatabaseStorage();
