@@ -7,6 +7,7 @@ import {
 } from "@shared/schema";
 import { db, pool } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
+import type { RowDataPacket } from 'mysql2';
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { IStorage } from "./storage";
@@ -64,7 +65,7 @@ export class DatabaseStorage implements IStorage {
     const hashedPassword = await this.hashPassword(insertUser.password);
     
     // Insert user and get the ID
-    const result = await db
+    await db
       .insert(users)
       .values({
         ...insertUser,
@@ -72,8 +73,12 @@ export class DatabaseStorage implements IStorage {
       });
     
     // In MySQL, we need to get the last insert ID manually
-    const [idResult] = await db.execute(sql`SELECT LAST_INSERT_ID() as id`);
-    const userId = Number(idResult.id);
+    const [rows] = await pool.query<mysql.RowDataPacket[]>('SELECT LAST_INSERT_ID() as id');
+    if (!rows || !rows[0]) {
+      throw new Error("Failed to retrieve insert ID");
+    }
+    
+    const userId = Number(rows[0].id);
     
     // Return the newly created user
     const user = await this.getUser(userId);
@@ -109,32 +114,34 @@ export class DatabaseStorage implements IStorage {
 
   async createContent(insertContent: InsertContent): Promise<Content> {
     // Check if content exists
-    const existingContent = await this.getContent(
-      insertContent.sectionType,
-      insertContent.sectionKey,
-      insertContent.language
-    );
+    if (insertContent.sectionType && insertContent.sectionKey && insertContent.language) {
+      const existingContent = await this.getContent(
+        insertContent.sectionType,
+        insertContent.sectionKey,
+        insertContent.language
+      );
 
-    if (existingContent) {
-      // Create revision of the existing content before updating
-      await this.createContentRevision({
-        contentId: existingContent.id,
-        content: existingContent.content,
-        createdBy: insertContent.updatedBy
-      });
+      if (existingContent) {
+        // Create revision of the existing content before updating
+        await this.createContentRevision({
+          contentId: existingContent.id,
+          content: existingContent.content as Json,
+          createdBy: insertContent.updatedBy
+        });
 
-      // Update the existing content
-      const updatedContent = await this.updateContent(existingContent.id, {
-        content: insertContent.content,
-        updatedAt: new Date(),
-        updatedBy: insertContent.updatedBy
-      });
-      
-      if (!updatedContent) {
-        throw new Error("Failed to update content");
+        // Update the existing content
+        const updatedContent = await this.updateContent(existingContent.id, {
+          content: insertContent.content,
+          updatedAt: new Date(),
+          updatedBy: insertContent.updatedBy
+        });
+        
+        if (!updatedContent) {
+          throw new Error("Failed to update content");
+        }
+        
+        return updatedContent;
       }
-      
-      return updatedContent;
     }
 
     // Create new content
@@ -148,20 +155,24 @@ export class DatabaseStorage implements IStorage {
       });
     
     // In MySQL, we need to get the last insert ID manually
-    const [idResult] = await db.execute(sql`SELECT LAST_INSERT_ID() as id`);
-    const contentId = Number(idResult.id);
+    const [rows] = await pool.query<mysql.RowDataPacket[]>('SELECT LAST_INSERT_ID() as id');
+    if (!rows || !rows[0]) {
+      throw new Error("Failed to retrieve insert ID");
+    }
+    
+    const contentId = Number(rows[0].id);
     
     // Get the newly created content using ID
-    const [content] = await db
+    const result = await db
       .select()
       .from(contents)
       .where(eq(contents.id, contentId));
     
-    if (!content) {
+    if (!result.length) {
       throw new Error("Failed to retrieve created content");
     }
     
-    return content;
+    return result[0];
   }
 
   async updateContent(id: number, updatedFields: Partial<Content>): Promise<Content | undefined> {
@@ -205,8 +216,12 @@ export class DatabaseStorage implements IStorage {
       });
     
     // In MySQL, we need to get the last insert ID manually
-    const [idResult] = await db.execute(sql`SELECT LAST_INSERT_ID() as id`);
-    const revisionId = Number(idResult.id);
+    const [rows] = await pool.query<RowDataPacket[]>('SELECT LAST_INSERT_ID() as id');
+    if (!rows || !rows[0]) {
+      throw new Error("Failed to retrieve insert ID");
+    }
+    
+    const revisionId = Number(rows[0].id);
     
     // Get the newly created revision
     const revision = await this.getContentRevision(revisionId);
@@ -237,8 +252,12 @@ export class DatabaseStorage implements IStorage {
       });
     
     // In MySQL, we need to get the last insert ID manually
-    const [idResult] = await db.execute(sql`SELECT LAST_INSERT_ID() as id`);
-    const mediaId = Number(idResult.id);
+    const [rows] = await pool.query<RowDataPacket[]>('SELECT LAST_INSERT_ID() as id');
+    if (!rows || !rows[0]) {
+      throw new Error("Failed to retrieve insert ID");
+    }
+    
+    const mediaId = Number(rows[0].id);
     
     // Get the newly created media
     const mediaItem = await this.getMediaById(mediaId);
