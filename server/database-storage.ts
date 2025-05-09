@@ -7,7 +7,6 @@ import {
 } from "@shared/schema";
 import { db, pool } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
-import type { RowDataPacket } from 'mysql2';
 import type { JsonValue } from 'type-fest';
 import session from "express-session";
 import createMemoryStore from "memorystore";
@@ -18,7 +17,7 @@ export class DatabaseStorage implements IStorage {
   sessionStore: session.Store;
 
   constructor() {
-    // Create memory session store for MariaDB/MySQL
+    // Create memory session store for PostgreSQL
     const MemoryStore = createMemoryStore(session);
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000 // prune expired entries every 24h
@@ -65,29 +64,20 @@ export class DatabaseStorage implements IStorage {
     // Hash the password before storing
     const hashedPassword = await this.hashPassword(insertUser.password);
     
-    // Insert user and get the ID
-    await db
+    // Insert user and get the ID with PostgreSQL returning clause
+    const result = await db
       .insert(users)
       .values({
         ...insertUser,
         password: hashedPassword
-      });
+      })
+      .returning();
     
-    // In MySQL, we need to get the last insert ID manually
-    const [rows] = await pool.query<RowDataPacket[]>('SELECT LAST_INSERT_ID() as id');
-    if (!rows || !rows[0]) {
-      throw new Error("Failed to retrieve insert ID");
+    if (!result || result.length === 0) {
+      throw new Error("Failed to insert user");
     }
     
-    const userId = Number(rows[0].id);
-    
-    // Return the newly created user
-    const user = await this.getUser(userId);
-    if (!user) {
-      throw new Error("Failed to retrieve created user");
-    }
-    
-    return user;
+    return result[0];
   }
 
   // Content operations
@@ -145,32 +135,19 @@ export class DatabaseStorage implements IStorage {
       }
     }
 
-    // Create new content
+    // Create new content with PostgreSQL returning clause
     const now = new Date();
-    await db
+    const result = await db
       .insert(contents)
       .values({
         ...insertContent,
         createdAt: now,
         updatedAt: now
-      });
+      })
+      .returning();
     
-    // In MySQL, we need to get the last insert ID manually
-    const [rows] = await pool.query<RowDataPacket[]>('SELECT LAST_INSERT_ID() as id');
-    if (!rows || !rows[0]) {
-      throw new Error("Failed to retrieve insert ID");
-    }
-    
-    const contentId = Number(rows[0].id);
-    
-    // Get the newly created content using ID
-    const result = await db
-      .select()
-      .from(contents)
-      .where(eq(contents.id, contentId));
-    
-    if (!result.length) {
-      throw new Error("Failed to retrieve created content");
+    if (!result || result.length === 0) {
+      throw new Error("Failed to insert content");
     }
     
     return result[0];
@@ -209,28 +186,19 @@ export class DatabaseStorage implements IStorage {
 
   async createContentRevision(insertRevision: InsertContentRevision): Promise<ContentRevision> {
     const now = new Date();
-    await db
+    const result = await db
       .insert(contentRevisions)
       .values({
         ...insertRevision,
         createdAt: now
-      });
+      })
+      .returning();
     
-    // In MySQL, we need to get the last insert ID manually
-    const [rows] = await pool.query<RowDataPacket[]>('SELECT LAST_INSERT_ID() as id');
-    if (!rows || !rows[0]) {
-      throw new Error("Failed to retrieve insert ID");
+    if (!result || result.length === 0) {
+      throw new Error("Failed to insert content revision");
     }
     
-    const revisionId = Number(rows[0].id);
-    
-    // Get the newly created revision
-    const revision = await this.getContentRevision(revisionId);
-    if (!revision) {
-      throw new Error("Failed to retrieve created content revision");
-    }
-    
-    return revision;
+    return result[0];
   }
 
   async getContentRevision(id: number): Promise<ContentRevision | undefined> {
@@ -245,28 +213,19 @@ export class DatabaseStorage implements IStorage {
   // Media operations
   async createMedia(insertMedia: InsertMedia): Promise<Media> {
     const now = new Date();
-    await db
+    const result = await db
       .insert(media)
       .values({
         ...insertMedia,
         uploadedAt: now
-      });
+      })
+      .returning();
     
-    // In MySQL, we need to get the last insert ID manually
-    const [rows] = await pool.query<RowDataPacket[]>('SELECT LAST_INSERT_ID() as id');
-    if (!rows || !rows[0]) {
-      throw new Error("Failed to retrieve insert ID");
+    if (!result || result.length === 0) {
+      throw new Error("Failed to insert media");
     }
     
-    const mediaId = Number(rows[0].id);
-    
-    // Get the newly created media
-    const mediaItem = await this.getMediaById(mediaId);
-    if (!mediaItem) {
-      throw new Error("Failed to retrieve created media");
-    }
-    
-    return mediaItem;
+    return result[0];
   }
 
   async getMediaById(id: number): Promise<Media | undefined> {
@@ -310,29 +269,20 @@ export class DatabaseStorage implements IStorage {
   // Contact submission operations
   async createContactSubmission(insertSubmission: InsertContactSubmission): Promise<ContactSubmission> {
     const now = new Date();
-    await db
+    const result = await db
       .insert(contactSubmissions)
       .values({
         ...insertSubmission,
         createdAt: now,
         processed: false
-      });
+      })
+      .returning();
     
-    // In MySQL, we need to get the last insert ID manually
-    const [rows] = await pool.query<RowDataPacket[]>('SELECT LAST_INSERT_ID() as id');
-    if (!rows || !rows[0]) {
-      throw new Error("Failed to retrieve insert ID");
+    if (!result || result.length === 0) {
+      throw new Error("Failed to insert contact submission");
     }
     
-    const submissionId = Number(rows[0].id);
-    
-    // Get the newly created submission
-    const submission = await this.getContactSubmission(submissionId);
-    if (!submission) {
-      throw new Error("Failed to retrieve created contact submission");
-    }
-    
-    return submission;
+    return result[0];
   }
 
   async getContactSubmissions(): Promise<ContactSubmission[]> {
