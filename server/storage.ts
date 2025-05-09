@@ -122,7 +122,12 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentId.user++;
-    const user: User = { ...insertUser, id };
+    const user: User = { 
+      ...insertUser, 
+      id,
+      name: insertUser.name ?? null,
+      isAdmin: insertUser.isAdmin ?? false
+    };
     this.users.set(id, user);
     return user;
   }
@@ -148,7 +153,7 @@ export class MemStorage implements IStorage {
     const existingContent = await this.getContent(
       insertContent.sectionType,
       insertContent.sectionKey,
-      insertContent.language
+      insertContent.language || 'ru' // Устанавливаем значение по умолчанию
     );
 
     if (existingContent) {
@@ -173,6 +178,7 @@ export class MemStorage implements IStorage {
     const content: Content = {
       ...insertContent,
       id,
+      language: insertContent.language || 'ru', // Устанавливаем значение по умолчанию
       createdAt: now,
       updatedAt: now
     };
@@ -207,9 +213,16 @@ export class MemStorage implements IStorage {
   async createContentRevision(insertRevision: InsertContentRevision): Promise<ContentRevision> {
     const id = this.currentId.contentRevision++;
     const now = new Date();
+    
+    // Преобразуем неизвестный JSON в правильный тип
+    const content = typeof insertRevision.content === 'string' 
+      ? JSON.parse(insertRevision.content) 
+      : insertRevision.content;
+      
     const revision: ContentRevision = {
       ...insertRevision,
       id,
+      content,
       createdAt: now
     };
     
@@ -236,7 +249,8 @@ export class MemStorage implements IStorage {
     const media: Media = {
       ...insertMedia,
       id,
-      uploadedAt: now
+      uploadedAt: now,
+      category: insertMedia.category ?? null
     };
     
     this.mediaFiles.set(id, media);
@@ -270,7 +284,10 @@ export class MemStorage implements IStorage {
       ...insertSubmission,
       id,
       createdAt: now,
-      processed: false
+      processed: false,
+      message: insertSubmission.message ?? null,
+      email: insertSubmission.email ?? null,
+      service: insertSubmission.service ?? null
     };
     
     this.contactForms.set(id, submission);

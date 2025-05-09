@@ -1,10 +1,10 @@
-import { pgTable, serial, text, boolean, jsonb, timestamp, varchar, index, uuid } from "drizzle-orm/pg-core";
+import { mysqlTable, int, text, boolean, json, timestamp, varchar, index, primaryKey, mysqlEnum } from "drizzle-orm/mysql-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // Users for Authentication
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
+export const users = mysqlTable("users", {
+  id: int("id").autoincrement().primaryKey(),
   username: varchar("username", { length: 255 }).notNull().unique(),
   password: varchar("password", { length: 255 }).notNull(),
   name: varchar("name", { length: 255 }),
@@ -19,16 +19,16 @@ export const insertUserSchema = createInsertSchema(users).pick({
 });
 
 // Content model for all page sections
-export const contents = pgTable("contents", {
-  id: serial("id").primaryKey(),
+export const contents = mysqlTable("contents", {
+  id: int("id").autoincrement().primaryKey(),
   sectionType: varchar("section_type", { length: 50 }).notNull(),
   sectionKey: varchar("section_key", { length: 100 }).notNull(),
   language: varchar("language", { length: 10 }).notNull().default("ru"),
-  content: jsonb("content").notNull(),
+  content: json("content").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  createdBy: serial("created_by").notNull(),
-  updatedBy: serial("updated_by").notNull(),
+  createdBy: int("created_by").notNull(),
+  updatedBy: int("updated_by").notNull(),
 }, (table) => {
   return {
     createdByIndex: index("created_by_idx").on(table.createdBy),
@@ -46,12 +46,12 @@ export const insertContentSchema = createInsertSchema(contents).pick({
 });
 
 // Content revisions for version control
-export const contentRevisions = pgTable("content_revisions", {
-  id: serial("id").primaryKey(),
-  contentId: serial("content_id").notNull(),
-  content: jsonb("content").notNull(),
+export const contentRevisions = mysqlTable("content_revisions", {
+  id: int("id").autoincrement().primaryKey(),
+  contentId: int("content_id").notNull(),
+  content: json("content").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  createdBy: serial("created_by").notNull(),
+  createdBy: int("created_by").notNull(),
 }, (table) => {
   return {
     contentIdIndex: index("content_id_idx").on(table.contentId),
@@ -66,16 +66,16 @@ export const insertContentRevisionSchema = createInsertSchema(contentRevisions).
 });
 
 // Media files for portfolio and other sections
-export const media = pgTable("media", {
-  id: serial("id").primaryKey(),
+export const media = mysqlTable("media", {
+  id: int("id").autoincrement().primaryKey(),
   filename: varchar("filename", { length: 255 }).notNull(),
   originalName: varchar("original_name", { length: 255 }).notNull(),
   mimeType: varchar("mime_type", { length: 100 }).notNull(),
-  size: serial("size").notNull(),
+  size: int("size").notNull(),
   path: varchar("path", { length: 255 }).notNull(),
   category: varchar("category", { length: 50 }),
   uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
-  uploadedBy: serial("uploaded_by").notNull(),
+  uploadedBy: int("uploaded_by").notNull(),
 }, (table) => {
   return {
     uploadedByIndex: index("uploaded_by_idx").on(table.uploadedBy),
@@ -93,8 +93,8 @@ export const insertMediaSchema = createInsertSchema(media).pick({
 });
 
 // Contact form submissions
-export const contactSubmissions = pgTable("contact_submissions", {
-  id: serial("id").primaryKey(),
+export const contactSubmissions = mysqlTable("contact_submissions", {
+  id: int("id").autoincrement().primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   phone: varchar("phone", { length: 50 }).notNull(),
   email: varchar("email", { length: 255 }),

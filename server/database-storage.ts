@@ -17,7 +17,7 @@ export class DatabaseStorage implements IStorage {
   sessionStore: session.Store;
 
   constructor() {
-    // Create memory session store for PostgreSQL
+    // Create memory session store for MariaDB
     const MemoryStore = createMemoryStore(session);
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000 // prune expired entries every 24h
@@ -64,20 +64,30 @@ export class DatabaseStorage implements IStorage {
     // Hash the password before storing
     const hashedPassword = await this.hashPassword(insertUser.password);
     
-    // Insert user and get the ID with PostgreSQL returning clause
-    const result = await db
-      .insert(users)
-      .values({
-        ...insertUser,
-        password: hashedPassword
-      })
-      .returning();
+    // Insert user with MySQL and get the insert ID
+    const [insertResult] = await pool.execute(
+      'INSERT INTO users (username, password, name, is_admin) VALUES (?, ?, ?, ?)',
+      [
+        insertUser.username,
+        hashedPassword,
+        insertUser.name || null,
+        insertUser.isAdmin || false
+      ]
+    );
     
-    if (!result || result.length === 0) {
+    // MySQL result contains insertId
+    const insertId = (insertResult as any).insertId;
+    if (!insertId) {
       throw new Error("Failed to insert user");
     }
     
-    return result[0];
+    // Get the created user by ID
+    const user = await this.getUser(Number(insertId));
+    if (!user) {
+      throw new Error("User created but could not be retrieved");
+    }
+    
+    return user;
   }
 
   // Content operations
@@ -135,22 +145,41 @@ export class DatabaseStorage implements IStorage {
       }
     }
 
-    // Create new content with PostgreSQL returning clause
+    // Create new content with direct MySQL query
     const now = new Date();
-    const result = await db
-      .insert(contents)
-      .values({
-        ...insertContent,
-        createdAt: now,
-        updatedAt: now
-      })
-      .returning();
+    const contentJson = JSON.stringify(insertContent.content);
     
-    if (!result || result.length === 0) {
+    const [insertResult] = await pool.execute(
+      'INSERT INTO contents (section_type, section_key, language, content, created_at, updated_at, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [
+        insertContent.sectionType,
+        insertContent.sectionKey,
+        insertContent.language || 'ru',
+        contentJson,
+        now,
+        now,
+        insertContent.createdBy,
+        insertContent.updatedBy
+      ]
+    );
+    
+    // MySQL result contains insertId
+    const insertId = (insertResult as any).insertId;
+    if (!insertId) {
       throw new Error("Failed to insert content");
     }
     
-    return result[0];
+    // Get the created content by ID
+    const content = await db
+      .select()
+      .from(contents)
+      .where(eq(contents.id, Number(insertId)));
+    
+    if (!content || content.length === 0) {
+      throw new Error("Content created but could not be retrieved");
+    }
+    
+    return content[0];
   }
 
   async updateContent(id: number, updatedFields: Partial<Content>): Promise<Content | undefined> {
@@ -186,19 +215,36 @@ export class DatabaseStorage implements IStorage {
 
   async createContentRevision(insertRevision: InsertContentRevision): Promise<ContentRevision> {
     const now = new Date();
-    const result = await db
-      .insert(contentRevisions)
-      .values({
-        ...insertRevision,
-        createdAt: now
-      })
-      .returning();
+    const contentJson = JSON.stringify(insertRevision.content);
     
-    if (!result || result.length === 0) {
+    // Insert with direct MySQL query
+    const [insertResult] = await pool.execute(
+      'INSERT INTO content_revisions (content_id, content, created_at, created_by) VALUES (?, ?, ?, ?)',
+      [
+        insertRevision.contentId,
+        contentJson,
+        now,
+        insertRevision.createdBy
+      ]
+    );
+    
+    // MySQL result contains insertId
+    const insertId = (insertResult as any).insertId;
+    if (!insertId) {
       throw new Error("Failed to insert content revision");
     }
     
-    return result[0];
+    // Get the created revision by ID
+    const revision = await db
+      .select()
+      .from(contentRevisions)
+      .where(eq(contentRevisions.id, Number(insertId)));
+    
+    if (!revision || revision.length === 0) {
+      throw new Error("Content revision created but could not be retrieved");
+    }
+    
+    return revision[0];
   }
 
   async getContentRevision(id: number): Promise<ContentRevision | undefined> {
@@ -213,19 +259,39 @@ export class DatabaseStorage implements IStorage {
   // Media operations
   async createMedia(insertMedia: InsertMedia): Promise<Media> {
     const now = new Date();
-    const result = await db
-      .insert(media)
-      .values({
-        ...insertMedia,
-        uploadedAt: now
-      })
-      .returning();
     
-    if (!result || result.length === 0) {
+    // Insert with direct MySQL query
+    const [insertResult] = await pool.execute(
+      'INSERT INTO media (filename, original_name, mime_type, size, path, category, uploaded_at, uploaded_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [
+        insertMedia.filename,
+        insertMedia.originalName,
+        insertMedia.mimeType,
+        insertMedia.size,
+        insertMedia.path,
+        insertMedia.category || null,
+        now,
+        insertMedia.uploadedBy
+      ]
+    );
+    
+    // MySQL result contains insertId
+    const insertId = (insertResult as any).insertId;
+    if (!insertId) {
       throw new Error("Failed to insert media");
     }
     
-    return result[0];
+    // Get the created media by ID
+    const mediaItem = await db
+      .select()
+      .from(media)
+      .where(eq(media.id, Number(insertId)));
+    
+    if (!mediaItem || mediaItem.length === 0) {
+      throw new Error("Media created but could not be retrieved");
+    }
+    
+    return mediaItem[0];
   }
 
   async getMediaById(id: number): Promise<Media | undefined> {
@@ -269,20 +335,38 @@ export class DatabaseStorage implements IStorage {
   // Contact submission operations
   async createContactSubmission(insertSubmission: InsertContactSubmission): Promise<ContactSubmission> {
     const now = new Date();
-    const result = await db
-      .insert(contactSubmissions)
-      .values({
-        ...insertSubmission,
-        createdAt: now,
-        processed: false
-      })
-      .returning();
     
-    if (!result || result.length === 0) {
+    // Insert with direct MySQL query
+    const [insertResult] = await pool.execute(
+      'INSERT INTO contact_submissions (name, phone, email, service, message, created_at, processed) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [
+        insertSubmission.name,
+        insertSubmission.phone,
+        insertSubmission.email || null,
+        insertSubmission.service || null,
+        insertSubmission.message || null,
+        now,
+        false
+      ]
+    );
+    
+    // MySQL result contains insertId
+    const insertId = (insertResult as any).insertId;
+    if (!insertId) {
       throw new Error("Failed to insert contact submission");
     }
     
-    return result[0];
+    // Get the created submission by ID
+    const submission = await db
+      .select()
+      .from(contactSubmissions)
+      .where(eq(contactSubmissions.id, Number(insertId)));
+    
+    if (!submission || submission.length === 0) {
+      throw new Error("Contact submission created but could not be retrieved");
+    }
+    
+    return submission[0];
   }
 
   async getContactSubmissions(): Promise<ContactSubmission[]> {

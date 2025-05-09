@@ -1,10 +1,20 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import createTables from "./create-tables";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Initialize database tables
+createTables()
+  .then(() => {
+    log('Database tables initialized successfully');
+  })
+  .catch((err) => {
+    log('Failed to initialize database tables: ' + err.message);
+  });
 
 app.use((req, res, next) => {
   const start = Date.now();

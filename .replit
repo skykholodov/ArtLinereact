@@ -5,6 +5,7 @@ externalPort = 80
 
 [nix]
 channel = "stable-24_05"
+packages = ["mariadb"]
 
 [workflows]
 runButton = "Run Development Server"
