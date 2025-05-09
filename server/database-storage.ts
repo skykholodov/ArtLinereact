@@ -8,6 +8,7 @@ import {
 import { db, pool } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
 import type { RowDataPacket } from 'mysql2';
+import type { JsonValue } from 'type-fest';
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { IStorage } from "./storage";
@@ -318,8 +319,12 @@ export class DatabaseStorage implements IStorage {
       });
     
     // In MySQL, we need to get the last insert ID manually
-    const [idResult] = await db.execute(sql`SELECT LAST_INSERT_ID() as id`);
-    const submissionId = Number(idResult.id);
+    const [rows] = await pool.query<RowDataPacket[]>('SELECT LAST_INSERT_ID() as id');
+    if (!rows || !rows[0]) {
+      throw new Error("Failed to retrieve insert ID");
+    }
+    
+    const submissionId = Number(rows[0].id);
     
     // Get the newly created submission
     const submission = await this.getContactSubmission(submissionId);
