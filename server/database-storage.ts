@@ -74,7 +74,7 @@ export class DatabaseStorage implements IStorage {
       });
     
     // In MySQL, we need to get the last insert ID manually
-    const [rows] = await pool.query<mysql.RowDataPacket[]>('SELECT LAST_INSERT_ID() as id');
+    const [rows] = await pool.query<RowDataPacket[]>('SELECT LAST_INSERT_ID() as id');
     if (!rows || !rows[0]) {
       throw new Error("Failed to retrieve insert ID");
     }
@@ -126,7 +126,7 @@ export class DatabaseStorage implements IStorage {
         // Create revision of the existing content before updating
         await this.createContentRevision({
           contentId: existingContent.id,
-          content: existingContent.content as Json,
+          content: existingContent.content as JsonValue,
           createdBy: insertContent.updatedBy
         });
 
@@ -156,7 +156,7 @@ export class DatabaseStorage implements IStorage {
       });
     
     // In MySQL, we need to get the last insert ID manually
-    const [rows] = await pool.query<mysql.RowDataPacket[]>('SELECT LAST_INSERT_ID() as id');
+    const [rows] = await pool.query<RowDataPacket[]>('SELECT LAST_INSERT_ID() as id');
     if (!rows || !rows[0]) {
       throw new Error("Failed to retrieve insert ID");
     }
