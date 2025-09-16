@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: artlinekz-backend
+    env: node
+    plan: free
+    rootDir: backend
+    buildCommand: "npm install && npm run build"
+    startCommand: "npm run start"
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: PROVIDER_URL
+        sync: false
+      - key: API_KEY
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+
+  - type: web
+    name: artlinekz-frontend
+    env: node
+    plan: free
+    rootDir: frontend
+    buildCommand: "npm install && npm run build"
+    startCommand: "npm run preview -- --port 3000"
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
